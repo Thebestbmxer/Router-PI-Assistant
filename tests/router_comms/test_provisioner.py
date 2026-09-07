@@ -58,8 +58,8 @@ def discovery():
 
 @pytest.fixture
 def bootstrap():
-    return Mock(spec=RouterBootstrap)
-    #return Mock()
+    #return Mock(spec=RouterBootstrap)
+    return Mock()
 
 @pytest.fixture
 def installer():
