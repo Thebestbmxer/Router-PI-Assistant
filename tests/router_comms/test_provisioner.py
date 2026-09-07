@@ -12,6 +12,13 @@ from router_controller.router_comms.ssh.connection_manager import (
     RouterConnectionManager,
 )
 from router_controller.router_comms.ssh.keys import SSHKeyPair
+from router_controller.router_comms.router.repository import (
+    RouterStateRepository,
+)
+
+@pytest.fixture
+def router_repository():
+    return Mock(spec=RouterStateRepository)
 
 
 @pytest.fixture
@@ -65,6 +72,7 @@ def provisioner(
     bootstrap,
     installer,
     connection,
+    router_repository
 ):
     bootstrap_factory = Mock(return_value=bootstrap)
     installer_factory = Mock(return_value=installer)
@@ -76,6 +84,7 @@ def provisioner(
         bootstrap_factory=bootstrap_factory,
         installer_factory=installer_factory,
         connection_factory=connection_factory,
+        router_repository=router_repository,
     )
 
     instance.bootstrap_factory_mock = bootstrap_factory
@@ -342,6 +351,7 @@ def test_create_connection_manager(
 
 def test_provision_saves_router_state(
     provisioner,
+    candidate,
     router_repository,
     state,
 ):
@@ -357,6 +367,7 @@ def test_provision_saves_router_state(
     assert state.ip_address == candidate.address
     assert state.ssh_port == candidate.ssh_port
     assert state.username == bootstrap_username
+
     
 def test_build_router_state_requires_mac(provisioner):
     candidate = RouterCandidate(
