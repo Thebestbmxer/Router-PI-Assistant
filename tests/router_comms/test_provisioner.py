@@ -353,7 +353,6 @@ def test_provision_saves_router_state(
     provisioner,
     candidate,
     router_repository,
-    state,
 ):
     
     provisioner.provision()
