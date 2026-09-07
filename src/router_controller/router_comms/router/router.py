@@ -60,6 +60,8 @@ class Router:
         cls,
         candidate: RouterCandidate,
         host_key_fingerprint: str,
+        state: RouterState | None = None,
+        connection_manager: RouterConnectionManager | None = None,
     ) -> "Router":
         """Create a router from a verified SSH connection."""
 
@@ -71,4 +73,6 @@ class Router:
         return cls(
             identity=identity,
             candidate=candidate,
+            state=state,
+            connection_manager=connection_manager,
         )

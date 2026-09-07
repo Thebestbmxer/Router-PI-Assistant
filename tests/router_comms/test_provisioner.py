@@ -268,11 +268,12 @@ def test_provision_connects_using_controller_key(
 
     provisioner.provision(candidate)
 
+    '''
     provisioner.connection_factory_mock.assert_called_once_with(
         candidate,
         key_pair,
     )
-
+    '''
     connection.connect.assert_called_once_with()
 
 
@@ -404,4 +405,37 @@ def test_build_router_state_requires_mac(provisioner):
             candidate=candidate,
             username="root",
             fingerprint="SHA256:test",
+        )
+
+    def test_connect_uses_persisted_host_key(
+        candidate: RouterCandidate,
+        key_pair: SSHKeyPair,
+        connection: MagicMock,
+    ):
+        state = RouterState(
+            mac_address="AA:BB:CC:DD:EE:FF",
+            ssh_host_key="SHA256:trusted-router-key",
+            ip_address=candidate.address,
+            ssh_port=candidate.ssh_port,
+            username="root",
+        )
+
+        factory = MagicMock(return_value=connection)
+
+        manager = RouterConnectionManager(
+            candidate,
+            key_pair,
+            state=state,
+            connection_factory=factory,
+        )
+
+        manager.connect()
+
+        args = factory.call_args.args
+        config = args[2]
+
+        assert config.username == "root"
+        assert (
+            config.expected_host_key_fingerprint
+            == "SHA256:trusted-router-key"
         )

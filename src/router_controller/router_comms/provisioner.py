@@ -13,7 +13,10 @@ from router_controller.router_comms.discovery.router_discovery import (
     RouterCandidate,
     RouterDiscovery,
 )
-from router_controller.router_comms.ssh.connection import RouterConnection
+from router_controller.router_comms.ssh.connection import (
+    RouterConnection,
+    RouterConnectionConfig,
+)
 from router_controller.router_comms.ssh.connection_manager import (
     RouterConnectionManager,
 )
@@ -51,7 +54,7 @@ class RouterProvisioner:
             RouterKeyInstaller,
         ],
         connection_factory: Callable[
-            [RouterCandidate, SSHKeyPair],
+            [RouterCandidate, SSHKeyPair, RouterConnectionConfig],
             RouterConnection,
         ],
         router_repository: RouterStateRepository,
@@ -106,6 +109,34 @@ class RouterProvisioner:
         finally:
             client.close()
 
+        manager = self.create_connection_manager(
+            candidate=candidate,
+            key_pair=key_pair,
+            state=state,
+        )
+
+        connection = manager.connect()
+
+        if not connection.connected:
+            raise RuntimeError(
+                "Router SSH connection was not established."
+            )
+
+        fingerprint = connection.host_key_fingerprint
+
+        if fingerprint is None:
+            raise RuntimeError(
+                "Router SSH host key could not be determined."
+            )
+
+        return Router.from_connection(
+            candidate=candidate,
+            host_key_fingerprint=fingerprint,
+            state=state,
+            connection_manager=manager,
+        )
+
+'''
         connection = self.connection_factory(candidate, key_pair)
 
         try:
@@ -128,7 +159,7 @@ class RouterProvisioner:
             )
         finally:
             connection.close()
-
+'''
         #return candidate
 
     def _load_or_generate_key_pair(self) -> SSHKeyPair:

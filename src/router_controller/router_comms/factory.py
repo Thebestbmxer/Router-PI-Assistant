@@ -44,6 +44,7 @@ def create_router_provisioner(
         connection_factory=lambda candidate, key_pair: RouterConnection(
             candidate=candidate,
             key_pair=key_pair,
+            config=config,
             config=RouterConnectionConfig(
                 username=config_class.ROUTER_SSH_USER,
                 timeout=config_class.ROUTER_SSH_TIMEOUT,
