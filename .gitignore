@@ -16,6 +16,7 @@ venv/
 .pytest_cache/
 .coverage
 htmlcov/
+Old_Roadmaps/
 
 # IDE/editor
 .vscode/
