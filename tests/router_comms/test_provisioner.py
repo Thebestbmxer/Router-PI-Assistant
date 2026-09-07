@@ -360,21 +360,36 @@ def test_create_connection_manager(
 
 def test_provision_saves_router_state(
     provisioner,
+    key_manager,
+    bootstrap,
+    installer,
+    connection,
     candidate,
+    key_pair,
+    bootstrap_credentials,
     router_repository,
 ):
-    
-    provisioner.provision()
+    key_manager.load_key_pair.return_value = key_pair
+
+    client = Mock()
+    bootstrap.connect.return_value = (
+        client,
+        bootstrap_credentials,
+    )
+
+    provisioner.provision(candidate)
 
     router_repository.save.assert_called_once()
 
     state = router_repository.save.call_args.args[0]
 
     assert state.mac_address == candidate.mac_address
-    assert state.ssh_host_key == bootstrap_fingerprint
+    assert state.ssh_host_key == (
+        bootstrap_credentials.ssh_host_key_fingerprint
+    )
     assert state.ip_address == candidate.address
     assert state.ssh_port == candidate.ssh_port
-    assert state.username == bootstrap_username
+    assert state.username == bootstrap_credentials.username
 
     
 def test_build_router_state_requires_mac(provisioner):
