@@ -33,6 +33,9 @@ def create_router_provisioner(
         ssh_port=config_class.ROUTER_SSH_PORT,
         timeout=config_class.ROUTER_SSH_TIMEOUT,
     )
+    router_repository = RouterStateRepository(
+        config_class.get_router_state_path()
+    )
 
     return RouterProvisioner(
         key_manager=key_manager,
@@ -51,4 +54,5 @@ def create_router_provisioner(
                 timeout=config_class.ROUTER_SSH_TIMEOUT,
             ),
         ),
+        router_repository=router_repository,
     )
