@@ -30,7 +30,8 @@ def create_router_provisioner(
     )
 
     router_repository = RouterStateRepository(
-        config_class.get_router_state_path()
+        #config_class.get_router_state_path()
+        config_class.get_data_dir()
     )
 
     return RouterProvisioner(
