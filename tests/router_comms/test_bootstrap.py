@@ -28,6 +28,10 @@ def candidate():
         ssh_port=22,
     )
 
+@pytest.fixture
+def host_key():
+    """Return a real SSH host key for fingerprint testing."""
+    return paramiko.RSAKey.generate(2048)
 
 def test_default_bootstrap_username(candidate):
     bootstrap = RouterBootstrap(candidate)
@@ -48,6 +52,8 @@ def test_bootstrap_tries_blank_password_first(candidate):
     transport = MagicMock()
 
     transport.is_authenticated.return_value = True
+    transport.get_remote_server_key.return_value = host_key
+    client.get_transport.return_value = transport
 
     with patch(
         "router_controller.router_comms.discovery.bootstrap.paramiko.SSHClient",
@@ -72,9 +78,11 @@ def test_bootstrap_tries_blank_password_first(candidate):
 def test_bootstrap_falls_back_to_password(candidate):
     blank_transport = MagicMock()
     blank_transport.auth_none.side_effect = paramiko.AuthenticationException()
+    blank_transport.get_remote_server_key.return_value = host_key
 
     password_client = MagicMock()
     password_client.connect.return_value = None
+    password_client.get_transport.return_value = blank_transport
 
     with patch(
         "router_controller.router_comms.discovery.bootstrap.paramiko.SSHClient",
@@ -142,6 +150,10 @@ def test_bootstrap_raises_connection_error(candidate):
 def test_bootstrap_disables_ssh_agent_and_existing_keys(candidate):
     client = MagicMock()
     client.connect.return_value = None
+
+    transport = MagicMock()
+    transport.get_remote_server_key.return_value = host_key
+    client.get_transport.return_value = transport
 
     bootstrap = RouterBootstrap(
         candidate,
