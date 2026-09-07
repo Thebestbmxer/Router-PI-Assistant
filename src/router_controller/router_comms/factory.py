@@ -3,21 +3,16 @@
 from __future__ import annotations
 
 from router_controller.config import Config
-from router_controller.router_comms.discovery.bootstrap import (
-    RouterBootstrap,
-)
-from router_controller.router_comms.discovery.router_discovery import (
-    RouterDiscovery,
-)
+from router_controller.router_comms.discovery.bootstrap        import RouterBootstrap
+from router_controller.router_comms.discovery.router_discovery import RouterDiscovery
 from router_controller.router_comms.provisioner import RouterProvisioner
-from router_controller.router_comms.ssh.connection import (
+from router_controller.router_comms.ssh.key_installer import RouterKeyInstaller
+from router_controller.router_comms.ssh.keys          import SSHKeyManager
+from router_controller.router_comms.ssh.connection    import (
     RouterConnection,
     RouterConnectionConfig,
 )
-from router_controller.router_comms.ssh.key_installer import (
-    RouterKeyInstaller,
-)
-from router_controller.router_comms.ssh.keys import SSHKeyManager
+from router_controller.router_comms.router.repository import RouterStateRepository
 
 
 def create_router_provisioner(
@@ -33,6 +28,7 @@ def create_router_provisioner(
         ssh_port=config_class.ROUTER_SSH_PORT,
         timeout=config_class.ROUTER_SSH_TIMEOUT,
     )
+
     router_repository = RouterStateRepository(
         config_class.get_router_state_path()
     )
@@ -56,3 +52,4 @@ def create_router_provisioner(
         ),
         router_repository=router_repository,
     )
+
