@@ -37,9 +37,11 @@ from router_controller.router_comms.router.state import RouterState
 class RouterProvisioner:
     """Provision an OpenWrt router for controller SSH access.
 
-    The provisioner coordinates the existing SSH components. It does not
-    implement SSH itself and does not persist router state.
+    The provisioner coordinates discovery, bootstrap authentication,
+    key installation, persistent router state, and establishment of
+    the permanent key-based SSH connection.
     """
+
 
     def __init__(
         self,

@@ -40,6 +40,7 @@ class Router:
         manager = RouterConnectionManager(
             candidate=self.candidate,
             key_pair=key_pair,
+            state=self.state,
         )
 
         self.connection_manager = manager

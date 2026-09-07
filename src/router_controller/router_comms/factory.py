@@ -38,10 +38,11 @@ def create_router_provisioner(
             timeout=config_class.ROUTER_SSH_TIMEOUT,
         ),
         installer_factory=lambda client: RouterKeyInstaller(client),
-        connection_factory=lambda candidate, key_pair: RouterConnection(
-            candidate=candidate,
-            key_pair=key_pair,
-            config=config,
-        ),
-        router_repository=router_repository,
+        connection_factory=lambda candidate, key_pair, config:
+            RouterConnection(
+                candidate=candidate,
+                key_pair=key_pair,
+                config=config,
+            ),
+            router_repository=router_repository,
     )
