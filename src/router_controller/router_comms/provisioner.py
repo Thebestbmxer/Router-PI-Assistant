@@ -143,12 +143,14 @@ class RouterProvisioner:
         self,
         candidate: RouterCandidate,
         key_pair: SSHKeyPair,
+        state: RouterState
     ) -> RouterConnectionManager:
         """Create a connection manager for a provisioned router."""
 
         return RouterConnectionManager(
             candidate=candidate,
             key_pair=key_pair,
+            state=state,
             connection_factory=self.connection_factory,
         )
 
