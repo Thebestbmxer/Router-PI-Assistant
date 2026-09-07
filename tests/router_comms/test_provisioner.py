@@ -339,3 +339,18 @@ def test_create_connection_manager(
     assert manager.candidate is candidate
     assert manager.key_pair is key_pair
     assert manager.connection_factory is connection_factory
+'''
+def test_provision_saves_router_state(...):
+    ...
+    provisioner.provision()
+
+    router_repository.save.assert_called_once()
+
+    state = router_repository.save.call_args.args[0]
+
+    assert state.mac_address == candidate.mac_address
+    assert state.ssh_host_key == bootstrap_fingerprint
+    assert state.ip_address == candidate.address
+    assert state.ssh_port == candidate.ssh_port
+    assert state.username == bootstrap_username
+    '''

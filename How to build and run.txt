@@ -1,6 +1,6 @@
 CHANGE INTO DIRECTORY!!!!!!
-cd ~/routerssistant
+cd ~/Router-PI-Assistant
 
-git pull https://github.com/TheBestBMXer/openwrt-pi-assistant.git
+git pull https://github.com/TheBestBMXer/Router-PI-Assistant.git
 dpkg-buildpackage -us -uc -b
-sudo apt install ../routerontroller_0.2.0-5_all.deb
+sudo apt install ../routerontroller_[whatever it says]_all.deb

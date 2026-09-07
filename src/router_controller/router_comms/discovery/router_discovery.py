@@ -1,4 +1,6 @@
-"""Discovery of routers reachable from the controller."""
+"""Discovery of routers reachable from the controller.
+   Only responsable for searching network
+   This file does not compare found routers to known routers"""
 
 from __future__ import annotations
 

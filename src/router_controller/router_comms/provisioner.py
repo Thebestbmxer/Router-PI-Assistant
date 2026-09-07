@@ -25,6 +25,10 @@ from router_controller.router_comms.ssh.keys import (
     SSHKeyPair,
 )
 from router_controller.router_comms.router.router import Router
+from router_controller.router_comms.router.repository import (
+    RouterRepository,
+)
+from router_controller.router_comms.router.state import RouterState
 
 
 
@@ -51,12 +55,16 @@ class RouterProvisioner:
             [RouterCandidate, SSHKeyPair],
             RouterConnection,
         ],
+        router_repository: RouterRepository,
+
     ) -> None:
         self.key_manager = key_manager
         self.discovery = discovery
         self.bootstrap_factory = bootstrap_factory
         self.installer_factory = installer_factory
         self.connection_factory = connection_factory
+        self.router_repository = router_repository
+
 
     def provision(
         self,
@@ -133,3 +141,24 @@ class RouterProvisioner:
             key_pair=key_pair,
             connection_factory=self.connection_factory,
         )
+
+    def _build_router_state(
+        self,
+        candidate: RouterCandidate,
+        username: str,
+        fingerprint: str,
+    ) -> RouterState:
+        """Build persistent state for a newly provisioned router."""
+        if candidate.mac_address is None:
+            raise RuntimeError(
+                "Router MAC address is required before router state can be saved."
+            )
+
+        return RouterState(
+            mac_address=candidate.mac_address,
+            ssh_host_key=fingerprint,
+            ip_address=candidate.address,
+            ssh_port=candidate.ssh_port,
+            username=username,
+        )
+
