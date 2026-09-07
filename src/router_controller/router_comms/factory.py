@@ -18,7 +18,6 @@ from router_controller.router_comms.router.repository import RouterStateReposito
 def create_router_provisioner(
     config_class: type[Config] = Config,
 ) -> RouterProvisioner:
-    """Create the router provisioning service."""
 
     key_manager = SSHKeyManager(
         config_class.get_ssh_key_directory()
@@ -30,8 +29,7 @@ def create_router_provisioner(
     )
 
     router_repository = RouterStateRepository(
-        #config_class.get_router_state_path()
-        config_class.get_data_dir()
+        config_class.get_database_path()
     )
 
     return RouterProvisioner(
@@ -53,4 +51,3 @@ def create_router_provisioner(
         ),
         router_repository=router_repository,
     )
-
