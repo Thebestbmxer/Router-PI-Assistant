@@ -52,6 +52,11 @@
                 Install SSH Key
             </button>
 
+            <button id="proceed-button"
+                    type="button"
+                    disabled>
+                Proceed to Status Page
+            </button>
         </div>
 
     </section>
@@ -163,12 +168,13 @@
         }
 </style>
 <script>
-    const statusElement      = document.getElementById("router-status");
+    const statusElement = document.getElementById("router-status");
     const informationElement = document.getElementById("router-information");
-    const addressElement     = document.getElementById("router-address");
-    const portElement        = document.getElementById("router-port");
-    const searchButton       = document.getElementById("search-button");
-    const installButton      = document.getElementById("install-button");
+    const addressElement = document.getElementById("router-address");
+    const portElement = document.getElementById("router-port");
+    const searchButton = document.getElementById("search-button");
+    const installButton = document.getElementById("install-button");
+    const proceedButton = document.getElementById("proceed-button");
 
     function showStatus(message, type = "") {
         statusElement.textContent = message;
@@ -180,16 +186,19 @@
         portElement.textContent = port;
         informationElement.classList.remove("hidden");
         installButton.disabled = false;
+        proceedButton.disabled = true;
     }
     function clearRouter() {
         addressElement.textContent = "—";
         portElement.textContent = "—";
         informationElement.classList.add("hidden");
         installButton.disabled = true;
+        proceedButton.disabled = true;
     }
     async function discoverRouter() {
         searchButton.disabled = true;
         installButton.disabled = true;
+        proceedButton.disabled = true;
         clearRouter();
         showStatus("Searching for an OpenWrt router...", "working");
         try {
@@ -210,7 +219,9 @@
         finally { searchButton.disabled = false; }
     }
     async function installSSHKey() {
-        searchButton.disabled = true; installButton.disabled = true;
+        searchButton.disabled = true;
+        installButton.disabled = true;
+        proceedButton.disabled = true;
         showStatus("Connecting to the router, installing the SSH key, " + "and verifying keyed SSH access...", "working");
         try {
             const response = await fetch("/api/router/provision", { method: "POST" });
@@ -218,13 +229,17 @@
                 throw new Error(result.error || "SSH key installation failed.");
             }
             showRouter(result.address, result.ssh_port); showStatus(result.message, "success");
+            proceedButton.disabled = false;
         } catch (error) {
             showStatus("SSH key installation failed: " + error.message, "error");
             installButton.disabled = false;
+            proceedButton.disabled = true;
         } finally { searchButton.disabled = false; }
     }
+    async function proceedToStatus() { } // Move to status page after SSH Key install
     document.addEventListener("DOMContentLoaded", () => { discoverRouter(); });
     searchButton.addEventListener("click", discoverRouter);
     installButton.addEventListener("click", installSSHKey); // Automatically search when the welcome page loads. discoverRouter();</script>
+    proceedButton.addEventListener("click", proceedToStatus); // Proceed to Status
 
 {% endblock %}

@@ -40,3 +40,29 @@ class RouterStateRepository:
         )
 
         return RouterState(**data)
+
+    from __future__ import annotations
+
+from router_controller.router_comms.router.state import RouterState
+
+
+class RouterRepository:
+    """Persisted router state lookup."""
+
+    def __init__(self, database):
+        self.database = database
+
+    def find_by_mac(
+        self,
+        mac_address: str,
+    ) -> RouterState | None:
+        """Return persisted router state for a MAC address."""
+
+        if not mac_address:
+            return None
+
+        # Implement using the application's existing database layer.
+        #
+        # This method should return RouterState when the router is known
+        # and None when it is not known.
+        raise NotImplementedError

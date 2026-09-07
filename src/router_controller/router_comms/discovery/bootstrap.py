@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import Sequence
 
 import paramiko
+import base64
+import hashlib
 
 from router_controller.router_comms.discovery.router_discovery import (
     RouterCandidate,
@@ -29,7 +31,13 @@ class BootstrapCredentials:
 
     username: str
     password: str
+    ssh_host_key_fingerprint: str
 
+def host_key_fingerprint(key: paramiko.PKey) -> str:
+    """Return an OpenSSH-style SHA256 fingerprint for an SSH host key."""
+    digest = hashlib.sha256(key.asbytes()).digest()
+    encoded = base64.b64encode(digest).decode("ascii").rstrip("=")
+    return f"SHA256:{encoded}"
 
 class RouterBootstrap:
     """Establish initial communication with a freshly reset router."""
@@ -77,10 +85,33 @@ class RouterBootstrap:
                     f"{self.candidate.address}:{self.candidate.ssh_port}."
                 ) from exc
 
+        transport = client.get_transport()
+
+        if transport is None:
+            raise InitialCommunicationError(
+                "Bootstrap SSH transport was not established."
+            )
+
+        host_key = transport.get_remote_server_key()
+
+        if host_key is None:
+            raise InitialCommunicationError(
+                "Bootstrap SSH host key could not be determined."
+            )
+
+        fingerprint = host_key_fingerprint(host_key)
+
         raise AuthenticationError(
             f"Bootstrap authentication failed for "
             f"{self.username}@{self.candidate.address}."
         ) from last_error
+
+    
+        return client, BootstrapCredentials(
+            username=self.username,
+            password=password,
+            ssh_host_key_fingerprint=fingerprint,
+        )
 
     def _connect_without_password(self) -> paramiko.SSHClient:
         """Connect using SSH none authentication.
@@ -154,3 +185,18 @@ class RouterBootstrap:
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         return client
+
+    @property
+    def host_key_fingerprint(self) -> str | None:
+        """Return the fingerprint of the connected router host key."""
+        transport = getattr(self, "_transport", None)
+
+        if transport is None:
+            return None
+
+        host_key = transport.get_remote_server_key()
+
+        if host_key is None:
+            return None
+
+        return host_key_fingerprint(host_key)
