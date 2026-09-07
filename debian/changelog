@@ -1,8 +1,16 @@
+router-pi-controller (0.4.4) unstable; urgency=medium
+
+  * Persist router state during provisioning
+  * Add router state repository to provisioning factory
+  * Fix bootstrap host key fingerprint handling
+
+ -- OpenWrt Pi Controller Project <Need_Email@willgethere.me>  Mon, 07 Sep 2026 08:32:00 -0800
+
 router-pi-controller (0.4.3) unstable; urgency=medium
 
   * Adding Router State for initial bootstrapping
 
- -- OpenWrt Pi Controller Project <Need_Email@willgethere.me>  Mon, 07 Sep 2026 20:26:00 +0100
+ -- OpenWrt Pi Controller Project <Need_Email@willgethere.me>  Mon, 07 Sep 2026 05:26:00 -0800
 
 router-pi-controller (0.4.2) unstable; urgency=medium
 
