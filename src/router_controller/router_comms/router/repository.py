@@ -41,11 +41,6 @@ class RouterStateRepository:
 
         return RouterState(**data)
 
-    from __future__ import annotations
-
-from router_controller.router_comms.router.state import RouterState
-
-
 class RouterRepository:
     """Persisted router state lookup."""
 
