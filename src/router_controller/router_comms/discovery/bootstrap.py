@@ -64,6 +64,11 @@ class RouterBootstrap:
 
         for password in self.passwords:
             try:
+                if password == "":
+                    client = self._connect_without_password()
+                else:
+                    client = self._connect_with_password(password)
+
                 transport = client.get_transport()
 
                 if transport is None:
@@ -88,20 +93,6 @@ class RouterBootstrap:
 
                 return client, credentials
 
-                '''
-                if password == "":
-                    client = self._connect_without_password()
-                else:
-                    client = self._connect_with_password(password)
-
-                credentials = BootstrapCredentials(
-                    username=self.username,
-                    password=password,
-                )
-
-                return client, credentials
-            '''
-
             except paramiko.AuthenticationException as exc:
                 last_error = exc
 
@@ -114,33 +105,11 @@ class RouterBootstrap:
                     f"{self.candidate.address}:{self.candidate.ssh_port}."
                 ) from exc
 
-        transport = client.get_transport()
-
-        if transport is None:
-            raise InitialCommunicationError(
-                "Bootstrap SSH transport was not established."
-            )
-
-        host_key = transport.get_remote_server_key()
-
-        if host_key is None:
-            raise InitialCommunicationError(
-                "Bootstrap SSH host key could not be determined."
-            )
-
-        fingerprint = host_key_fingerprint(host_key)
-
         raise AuthenticationError(
             f"Bootstrap authentication failed for "
             f"{self.username}@{self.candidate.address}."
         ) from last_error
 
-    
-        return client, BootstrapCredentials(
-            username=self.username,
-            password=password,
-            ssh_host_key_fingerprint=fingerprint,
-        )
 
     def _connect_without_password(self) -> paramiko.SSHClient:
         """Connect using SSH none authentication.

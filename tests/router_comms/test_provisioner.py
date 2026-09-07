@@ -7,6 +7,9 @@ import pytest
 from router_controller.router_comms.discovery.router_discovery import (
     RouterCandidate,
 )
+from router_controller.router_comms.discovery.bootstrap import (
+    BootstrapCredentials,
+)
 from router_controller.router_comms.provisioner import RouterProvisioner
 from router_controller.router_comms.ssh.connection_manager import (
     RouterConnectionManager,
@@ -15,6 +18,14 @@ from router_controller.router_comms.ssh.keys import SSHKeyPair
 from router_controller.router_comms.router.repository import (
     RouterStateRepository,
 )
+
+@pytest.fixture
+def bootstrap_credentials():
+    return BootstrapCredentials(
+        username="root",
+        password="",
+        ssh_host_key_fingerprint="SHA256:test-fingerprint",
+    )
 
 @pytest.fixture
 def router_repository():
@@ -26,8 +37,8 @@ def candidate():
     return RouterCandidate(
         address="192.168.1.1",
         ssh_port=22,
+        mac_address="AA:BB:CC:DD:EE:FF",
     )
-
 
 @pytest.fixture
 def key_pair(tmp_path):
@@ -37,33 +48,27 @@ def key_pair(tmp_path):
         public_key="ssh-rsa AAAATEST controller",
     )
 
-
 @pytest.fixture
 def key_manager():
     return Mock()
-
 
 @pytest.fixture
 def discovery():
     return Mock()
 
-
 @pytest.fixture
 def bootstrap():
     return Mock()
 
-
 @pytest.fixture
 def installer():
     return Mock()
-
 
 @pytest.fixture
 def connection():
     connection = Mock()
     connection.connected = True
     return connection
-
 
 @pytest.fixture
 def provisioner(
@@ -103,11 +108,13 @@ def test_provision_loads_existing_key(
     connection,
     candidate,
     key_pair,
+    bootstrap_credentials,
 ):
     key_manager.load_key_pair.return_value = key_pair
 
     client = Mock()
-    bootstrap.connect.return_value = (client, Mock())
+    #bootstrap.connect.return_value = (client, Mock())
+    bootstrap.connect.return_value = (client, bootstrap_credentials)
 
     result = provisioner.provision(candidate)
 
@@ -337,6 +344,7 @@ def test_create_connection_manager(
         bootstrap_factory=MagicMock(),
         installer_factory=MagicMock(),
         connection_factory=connection_factory,
+        router_repository=MagicMock(),
     )
 
     manager = provisioner.create_connection_manager(
