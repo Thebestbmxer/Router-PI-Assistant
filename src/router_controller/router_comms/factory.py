@@ -8,10 +8,7 @@ from router_controller.router_comms.discovery.router_discovery import RouterDisc
 from router_controller.router_comms.provisioner import RouterProvisioner
 from router_controller.router_comms.ssh.key_installer import RouterKeyInstaller
 from router_controller.router_comms.ssh.keys          import SSHKeyManager
-from router_controller.router_comms.ssh.connection    import (
-    RouterConnection,
-    RouterConnectionConfig,
-)
+from router_controller.router_comms.ssh.connection    import RouterConnection
 from router_controller.router_comms.router.repository import RouterStateRepository
 
 
@@ -45,10 +42,6 @@ def create_router_provisioner(
             candidate=candidate,
             key_pair=key_pair,
             config=config,
-            config=RouterConnectionConfig(
-                username=config_class.ROUTER_SSH_USER,
-                timeout=config_class.ROUTER_SSH_TIMEOUT,
-            ),
         ),
         router_repository=router_repository,
     )

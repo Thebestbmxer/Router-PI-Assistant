@@ -4,20 +4,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from router_controller.router_comms.discovery.router_discovery import (
-    RouterCandidate,
-)
-from router_controller.router_comms.discovery.bootstrap import (
-    BootstrapCredentials,
-)
+from router_controller.router_comms.discovery.router_discovery import RouterCandidate
+from router_controller.router_comms.discovery.bootstrap import BootstrapCredentials
 from router_controller.router_comms.provisioner import RouterProvisioner
-from router_controller.router_comms.ssh.connection_manager import (
-    RouterConnectionManager,
-)
+from router_controller.router_comms.ssh.connection_manager import RouterConnectionManager
 from router_controller.router_comms.ssh.keys import SSHKeyPair
-from router_controller.router_comms.router.repository import (
-    RouterStateRepository,
-)
+from router_controller.router_comms.router.state import RouterState
+from router_controller.router_comms.router.repository import RouterStateRepository
 
 @pytest.fixture
 def bootstrap_credentials():
@@ -267,15 +260,7 @@ def test_provision_connects_using_controller_key(
     bootstrap.connect.return_value = (client, Mock())
 
     provisioner.provision(candidate)
-
-    '''
-    provisioner.connection_factory_mock.assert_called_once_with(
-        candidate,
-        key_pair,
-    )
-    '''
     connection.connect.assert_called_once_with()
-
 
 def test_provision_closes_bootstrap_before_permanent_connection(
     provisioner,
@@ -293,12 +278,8 @@ def test_provision_closes_bootstrap_before_permanent_connection(
 
     events = []
 
-    client.close.side_effect = lambda: events.append(
-        "bootstrap-close"
-    )
-    connection.connect.side_effect = lambda: events.append(
-        "permanent-connect"
-    )
+    client.close.side_effect = lambda: events.append("bootstrap-close")
+    connection.connect.side_effect = lambda: events.append("permanent-connect")
 
     provisioner.provision(candidate)
 
@@ -321,10 +302,7 @@ def test_provision_failure_to_connect_is_propagated(
 
     client = Mock()
     bootstrap.connect.return_value = (client, Mock())
-
-    connection.connect.side_effect = RuntimeError(
-        "permanent connection failed"
-    )
+    connection.connect.side_effect = RuntimeError("permanent connection failed")
 
     with pytest.raises(
         RuntimeError,
@@ -407,35 +385,35 @@ def test_build_router_state_requires_mac(provisioner):
             fingerprint="SHA256:test",
         )
 
-    def test_connect_uses_persisted_host_key(
-        candidate: RouterCandidate,
-        key_pair: SSHKeyPair,
-        connection: MagicMock,
-    ):
-        state = RouterState(
-            mac_address="AA:BB:CC:DD:EE:FF",
-            ssh_host_key="SHA256:trusted-router-key",
-            ip_address=candidate.address,
-            ssh_port=candidate.ssh_port,
-            username="root",
-        )
+def test_connect_uses_persisted_host_key(
+    candidate: RouterCandidate,
+    key_pair: SSHKeyPair,
+    connection: MagicMock,
+):
+    state = RouterState(
+        mac_address="AA:BB:CC:DD:EE:FF",
+        ssh_host_key="SHA256:trusted-router-key",
+        ip_address=candidate.address,
+        ssh_port=candidate.ssh_port,
+        username="root",
+    )
 
-        factory = MagicMock(return_value=connection)
+    factory = MagicMock(return_value=connection)
 
-        manager = RouterConnectionManager(
-            candidate,
-            key_pair,
-            state=state,
-            connection_factory=factory,
-        )
+    manager = RouterConnectionManager(
+        candidate,
+        key_pair,
+        state=state,
+        connection_factory=factory,
+    )
 
-        manager.connect()
+    manager.connect()
 
-        args = factory.call_args.args
-        config = args[2]
+    args = factory.call_args.args
+    config = args[2]
 
-        assert config.username == "root"
-        assert (
-            config.expected_host_key_fingerprint
-            == "SHA256:trusted-router-key"
-        )
+    assert config.username == "root"
+    assert (
+        config.expected_host_key_fingerprint
+        == "SHA256:trusted-router-key"
+    )
