@@ -12,6 +12,9 @@ import hashlib
 from router_controller.router_comms.discovery.router_discovery import (
     RouterCandidate,
 )
+from router_controller.router_comms.ssh.connection import (
+    host_key_fingerprint,
+)
 from router_controller.router_comms.exceptions import (
     AuthenticationError,
     InitialCommunicationError,
@@ -61,6 +64,31 @@ class RouterBootstrap:
 
         for password in self.passwords:
             try:
+                transport = client.get_transport()
+
+                if transport is None:
+                    client.close()
+                    raise InitialCommunicationError(
+                        "Bootstrap SSH transport was not established."
+                    )
+
+                host_key = transport.get_remote_server_key()
+
+                if host_key is None:
+                    client.close()
+                    raise InitialCommunicationError(
+                        "Bootstrap SSH host key could not be determined."
+                    )
+
+                credentials = BootstrapCredentials(
+                    username=self.username,
+                    password=password,
+                    ssh_host_key_fingerprint=host_key_fingerprint(host_key),
+                )
+
+                return client, credentials
+
+                '''
                 if password == "":
                     client = self._connect_without_password()
                 else:
@@ -72,6 +100,7 @@ class RouterBootstrap:
                 )
 
                 return client, credentials
+            '''
 
             except paramiko.AuthenticationException as exc:
                 last_error = exc

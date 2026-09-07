@@ -26,10 +26,9 @@ from router_controller.router_comms.ssh.keys import (
 )
 from router_controller.router_comms.router.router import Router
 from router_controller.router_comms.router.repository import (
-    RouterRepository,
+    RouterStateRepository,
 )
 from router_controller.router_comms.router.state import RouterState
-
 
 
 class RouterProvisioner:
@@ -55,7 +54,7 @@ class RouterProvisioner:
             [RouterCandidate, SSHKeyPair],
             RouterConnection,
         ],
-        router_repository: RouterRepository,
+        router_repository: RouterStateRepository,
 
     ) -> None:
         self.key_manager = key_manager
@@ -88,11 +87,22 @@ class RouterProvisioner:
             candidate = self.discovery.discover()
 
         bootstrap = self.bootstrap_factory(candidate)
-        client, _credentials = bootstrap.connect()
+        #client, _credentials = bootstrap.connect()
+        client, credentials = bootstrap.connect()
+
 
         try:
             installer = self.installer_factory(client)
             installer.install(key_pair)
+
+            state = self._build_router_state(
+                candidate=candidate,
+                username=credentials.username,
+                fingerprint=credentials.ssh_host_key_fingerprint,
+            )
+
+            self.router_repository.save(state)
+
         finally:
             client.close()
 

@@ -339,9 +339,13 @@ def test_create_connection_manager(
     assert manager.candidate is candidate
     assert manager.key_pair is key_pair
     assert manager.connection_factory is connection_factory
-'''
-def test_provision_saves_router_state(...):
-    ...
+
+def test_provision_saves_router_state(
+    provisioner,
+    router_repository,
+    state,
+):
+    
     provisioner.provision()
 
     router_repository.save.assert_called_once()
@@ -353,4 +357,17 @@ def test_provision_saves_router_state(...):
     assert state.ip_address == candidate.address
     assert state.ssh_port == candidate.ssh_port
     assert state.username == bootstrap_username
-    '''
+    
+def test_build_router_state_requires_mac(provisioner):
+    candidate = RouterCandidate(
+        address="192.168.1.1",
+        ssh_port=22,
+        mac_address=None,
+    )
+
+    with pytest.raises(RuntimeError, match="MAC address"):
+        provisioner._build_router_state(
+            candidate=candidate,
+            username="root",
+            fingerprint="SHA256:test",
+        )
