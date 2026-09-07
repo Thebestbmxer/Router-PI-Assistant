@@ -47,7 +47,7 @@ def test_default_bootstrap_passwords(candidate):
     assert bootstrap.passwords == ("", "password")
 
 
-def test_bootstrap_tries_blank_password_first(candidate):
+def test_bootstrap_tries_blank_password_first(candidate, host_key):
     client = MagicMock()
     transport = MagicMock()
 
@@ -75,7 +75,7 @@ def test_bootstrap_tries_blank_password_first(candidate):
     transport.auth_none.assert_called_once_with("root")
 
 
-def test_bootstrap_falls_back_to_password(candidate):
+def test_bootstrap_falls_back_to_password(candidate, host_key):
     blank_transport = MagicMock()
     blank_transport.auth_none.side_effect = paramiko.AuthenticationException()
     blank_transport.get_remote_server_key.return_value = host_key
@@ -147,7 +147,7 @@ def test_bootstrap_raises_connection_error(candidate):
             bootstrap.connect()
 
 
-def test_bootstrap_disables_ssh_agent_and_existing_keys(candidate):
+def test_bootstrap_disables_ssh_agent_and_existing_keys(candidate, host_key):
     client = MagicMock()
     client.connect.return_value = None
 
