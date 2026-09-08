@@ -67,3 +67,37 @@ def test_router_can_create_connection_manager(tmp_path: Path):
     assert manager.candidate is candidate
     assert manager.key_pair is key_pair
     assert router.connected is False
+
+def test_router_connection_manager_uses_router_state(
+    tmp_path: Path,
+):
+    state = RouterState(
+        mac_address="AA:BB:CC:DD:EE:FF",
+        ssh_host_key="SHA256:trusted-router-key",
+        ip_address="192.168.50.1",
+        ssh_port=22,
+        username="root",
+    )
+
+    router = Router(
+        identity=RouterIdentity(
+            mac_address=state.mac_address,
+            ssh_host_key_fingerprint=state.ssh_host_key,
+        ),
+        candidate=RouterCandidate(
+            address=state.ip_address,
+            ssh_port=state.ssh_port,
+            mac_address=state.mac_address,
+        ),
+        state=state,
+    )
+
+    key_pair = SSHKeyPair(
+        private_key_path=tmp_path / "controller",
+        public_key_path=tmp_path / "controller.pub",
+        public_key="ssh-rsa AAAATEST",
+    )
+
+    manager = router.create_connection_manager(key_pair)
+
+    assert manager.state is state
