@@ -150,7 +150,7 @@ class RouterProvisioner:
         self,
         candidate: RouterCandidate,
         key_pair: SSHKeyPair,
-        state: RouterState
+        state: RouterState | None = None,
     ) -> RouterConnectionManager:
         """Create a connection manager for a provisioned router."""
 
