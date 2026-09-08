@@ -1,1153 +1,590 @@
-Router Pi Assistant — Canonical Development Roadmap
-GitHub Repository: https://github.com/Thebestbmxer/Router-PI-Assistant
+Router-PI-Assistant Roadmap
 
-Project: Router-PI-Assistant
-Package: router-pi-controller
-Python package: router_controller
-Target platform: Raspberry Pi / Debian Linux
-Router platform: OpenWrt, with special consideration for legacy/resource-constrained devices
-Current release: 0.4.4
-Roadmap status: Active
-Last updated: 2026-09-07
-1. Purpose
+Current baseline: 111 tests passing.
 
-Router Pi Assistant is a Raspberry Pi-based controller for discovering, provisioning, managing, and monitoring OpenWrt routers.
+The project has evolved from a router-provisioning utility into something broader: a LAN-based router management appliance running on the Raspberry Pi.
 
-The long-term objective is to provide a reliable management layer between a Raspberry Pi and OpenWrt routers, particularly older devices with severe hardware and firmware constraints.
+The Pi is intended to become the trusted management plane for the router while also hosting services that the router cannot efficiently provide, such as Pi-hole and Unbound.
+Phase 1 — Application Foundation ✅
+1. Project structure and packaging — Complete
 
-The controller should:
+The project has a proper installable src/ layout with:
 
-    Discover routers on the local network.
-    Identify routers independently of their current IP address.
-    Establish secure SSH communication.
-    Bootstrap routers that do not yet have the controller's SSH key.
-    Persist router identity and state.
-    Recover from DHCP/IP changes.
-    Collect normalized router information.
-    Provide a web-based management interface.
-    Keep OpenWrt-specific implementation details behind a clean integration layer.
-    Be installable and upgradeable as a normal Debian system application.
-    Remain testable without requiring a live router for most tests.
-
-2. Roadmap Rules
-
-This file is the canonical development roadmap.
-
-The older files: (No longer included in GitHub Repository)
-
-    Roadmap.txt
-    current Roadmap.txt
-    Previous Roadmap.txt
-    Previous Roadmap 2.txt
-    Previous Roadmap3.txt
-
-are historical planning documents and should not be treated as competing sources of truth.
-
-When implementation and roadmap disagree:
-
-    Verify the actual source code.
-    Run the test suite.
-    Update this roadmap to reflect reality.
-    Only then plan the next task.
-
-Do not mark functionality complete merely because code exists. A milestone is complete when its behavior is implemented, tested, packaged where appropriate, and integrated into the actual application architecture.
-3. Current Project State
-3.1 Foundation
-
-Status: COMPLETE
-
-The original application foundation is operational.
-
-Implemented:
-
-    Python package structure.
-    Flask application.
-    Configuration system.
-    Persistent application data directory.
-    Logging.
-    Application entry point.
-    Systemd service.
-    Dedicated service user/group.
-    Debian packaging.
-    Package installation.
-    Package upgrade handling.
-    Package removal/purge handling.
-    Persistent data preservation.
-    Version/changelog handling.
-    GitHub Actions testing/release infrastructure.
-    SSH key storage infrastructure.
-
-The project uses the src/router_controller/ package layout and builds a Debian package through the existing debian/rules / pybuild infrastructure.
-4. Current Release Baseline — 0.4.4
-
-Status: COMPLETE / VERIFIED
-
-The current installed system package is:
-
-router-pi-controller 0.4.4
-
-The Debian package was built locally and installed successfully.
-
-The installed Python package is located at:
-
-/usr/lib/python3/dist-packages/router_controller/
-
-The installed package was explicitly verified to contain the current router repository integration.
-
-This is important because an earlier development problem exposed a distinction between:
-
-src/router_controller/
-
-and:
-
-/usr/lib/python3/dist-packages/router_controller/
-
-The source tree contained newer code while the installed Debian package still contained version 0.4.3.
-
-The correct solution was not to permanently rely on:
-
-PYTHONPATH=src pytest
-
-Instead, the current source was packaged and installed as 0.4.4.
-
-The final system-level verification is:
-
-pytest
-109 passed
-
-This confirms that the installed application code and the source tests are now aligned.
-5. Testing Baseline
-
-Status: COMPLETE / VERIFIED
-
-Current test count:
-
-109 tests
-109 passed
-0 failed
-
-The suite covers:
-
-    application startup
-    configuration
-    database/application persistence
+    application configuration
     logging
+    Flask application infrastructure
     package metadata
-    systemd
-    package upgrade behavior
-    router bootstrap
-    SSH connections
-    connection management
-    SSH key installation
-    SSH key management
-    router discovery
-    router neighbors/MAC discovery
-    router identity
-    router network information
-    router state
-    router provisioning
-    router model
-    SSH behavior
+    systemd support
+    upgrade support
+    application entry point
 
-Both development-source execution and system-installed execution have been verified.
+The project is structured as a system application rather than depending on development-directory execution.
+2. Automated testing — Complete
 
-Preferred system-level verification:
+The project now has a broad automated test suite covering application and router communication functionality.
 
-pytest
+Current baseline: 111 tests passing.
+Phase 2 — Router Discovery & Identity ✅
+3. Router discovery — Complete
 
-Development-source verification may still use:
+The controller can discover router candidates and represent their network information.
+4. Router identity — Complete
 
-PYTHONPATH=src pytest
+Router identity is based on stable information including:
 
-but the application must not depend on PYTHONPATH at runtime.
-6. Router Identity Architecture
+    MAC address
+    SSH host-key fingerprint
 
-Status: COMPLETE
+This allows the controller to distinguish a known router from a newly discovered device.
+5. Persistent router state — Complete
 
-The controller now distinguishes router identity from router location.
-Identity
+Router state can be represented and persisted independently of transient discovery information.
 
-A router's stable identity is based on:
+This establishes the foundation for recognizing routers across application restarts.
+Phase 3 — Secure Router Access ✅
+6. Controller SSH key management — Complete
 
-MAC address
-SSH host-key fingerprint
+The controller can load or generate its SSH key pair.
+7. Bootstrap provisioning — Complete
 
-Location
+The provisioning workflow can:
 
-A router's current location is represented by:
+    establish initial router access
+    install the controller's public key
+    close the bootstrap connection
+    establish the permanent controller connection
 
-IP address
-SSH port
-network interface
+8. Persistent SSH connections — Complete
 
-This separation is essential because a router may receive a different IP address through DHCP without becoming a different router.
+The project has a dedicated SSH connection abstraction handling:
 
-The architectural model is:
+    controller-key authentication
+    connection lifecycle
+    command execution
+    connection state
+    cleanup
+    communication failures
 
+9. SSH host identity verification — Complete
+
+The permanent SSH connection verifies the router's expected host-key fingerprint.
+
+This establishes the core trust relationship:
+
+Pi
+ │
+ │ trusted SSH identity
+ ▼
 Router
-├── identity
-│   ├── MAC address
-│   └── SSH host-key fingerprint
-│
-└── location
-    ├── IP address
-    ├── SSH port
-    └── interface
 
-This provides the foundation for future rediscovery and DHCP recovery.
-7. Router State Persistence
+10. Connection manager — Complete
 
-Status: IMPLEMENTED / VERIFIED
+RouterConnectionManager provides the higher-level connection lifecycle and incorporates persisted router state when creating SSH connections.
+11. Router/connection integration — Complete
 
-Router state has now been introduced as a persistent application concern.
+Router now retains:
 
-Implemented:
+    identity
+    discovery candidate
+    persistent state
+    connection manager
 
-RouterState
-├── mac_address
-├── ssh_host_key
-├── ip_address
-├── ssh_port
-├── username
-├── first_seen
-└── last_seen
+The router object is therefore becoming the central representation of a managed router.
+Phase 4 — Management Plane 🔄
 
-And:
+Current development phase
 
-RouterStateRepository
-├── save()
-└── load()
+The focus now shifts from "Can the Pi connect to the router?" to:
 
-State is stored beneath the controller's persistent data directory.
+    "Can the Pi manage the router and provide the administrator with a useful management interface?"
 
-Tests verify:
+The Raspberry Pi becomes the authoritative management plane.
 
-    state can be saved
-    state can be loaded
-    missing state is handled
-    router identity survives IP changes
-    provisioning saves router state
-
-8. Provisioning and Persistent State Integration
-
-Status: COMPLETE FOR INITIAL PROVISIONING
-
-The provisioning flow now integrates router state persistence.
-
-Current lifecycle:
-
-Discover router
-      │
-      ▼
-Load/generate controller SSH key
-      │
-      ▼
-Bootstrap SSH connection
-      │
-      ▼
-Install controller public key
-      │
-      ▼
-Build RouterState
-      │
-      ▼
-Save RouterState
-      │
-      ▼
-Close bootstrap connection
-      │
-      ▼
-Create permanent key-based connection
-      │
-      ▼
-Verify connection
-      │
-      ▼
-Return Router
-
-The factory now constructs and injects:
-
-RouterStateRepository
-
-into:
-
-RouterProvisioner
-
-The provisioner therefore owns the orchestration while the repository owns persistence.
-
-This separation should be preserved.
-9. Router Discovery
-
-Status: COMPLETE
-
-Current discovery architecture:
-
-Pi network interfaces
+LAN Administrator
         │
         ▼
-Local IPv4 networks
+Router-PI-Assistant
         │
         ▼
-Candidate addresses
+RouterConnectionManager
         │
         ▼
-SSH port check
-        │
-        ▼
-RouterCandidate
-        │
-        ▼
-Neighbor/MAC discovery
+OpenWrt Router
 
-Discovery should remain separate from authentication and provisioning.
+12. Establish the Router management API
 
-Discovery identifies candidates.
+Next priority
 
-Bootstrap authenticates and provisions them.
+Make Router the central object used by application services.
 
-Permanent connection handles normal communication.
-10. MAC / Neighbor Discovery
+The architecture should develop toward:
 
-Status: COMPLETE
+Web/UI
+  │
+  ▼
+Application Services
+  │
+  ▼
+Router
+  │
+  ▼
+RouterConnectionManager
+  │
+  ▼
+RouterConnection
+  │
+  ▼
+Paramiko
 
-The controller can use local network neighbor information to associate an IP address with a MAC address.
+Higher-level application code should not directly manipulate Paramiko.
 
-This allows the system to distinguish:
+This provides one consistent management path for:
 
-current router location
+    status
+    configuration
+    networking
+    services
+    terminal
+    future automation
 
-from:
+Phase 5 — Router Status Interface
+13. Build Router Status service
 
-known router identity
+Create a read-oriented service responsible for obtaining structured information from the router.
 
-The long-term recovery strategy depends on this capability.
-11. SSH Key Management
+Initial information should include:
+System
 
-Status: COMPLETE
+    hostname
+    OpenWrt release
+    kernel
+    architecture
+    target/platform
+    uptime
 
-Implemented:
+Network
 
-    SSH key generation.
-    Existing key loading.
-    Key integrity handling.
-    Persistent controller key storage.
-    Public-key installation.
-    Idempotent key installation.
-    Bootstrap authentication.
-    Permanent key-based authentication.
+    interfaces
+    addresses
+    routes
+    WAN status
+    LAN status
+    DNS configuration
 
-The controller key pair is stored in the configured persistent data directory.
-12. Bootstrap SSH
+Management
 
-Status: COMPLETE
+    SSH connection state
+    router identity
+    host-key fingerprint
+    current IP
+    last-seen information
 
-The bootstrap process supports initial router access before the controller key has been installed.
+The service should return structured application data rather than raw command output.
+14. Build the Router Status page
 
-Current authentication strategy:
+Add a new web page displaying the information collected by the status service.
 
-root + blank password
-        │
-        ├── success ──► provision
-        │
-        ▼
-root + configured/default password
-        │
-        ├── success ──► provision
-        │
-        ▼
-authentication failure
+The first version should be intentionally read-only.
 
-Bootstrap connections explicitly disable:
+This becomes the first real end-to-end management feature:
 
-allow_agent=False
-look_for_keys=False
+Browser
+   ↓
+Flask
+   ↓
+Router Status Service
+   ↓
+Router
+   ↓
+SSH
+   ↓
+OpenWrt
 
-This prevents accidental use of unrelated SSH credentials from the Raspberry Pi.
+This page will also become an important real-router testing interface.
+15. Add Router Status to the Welcome page
 
-Bootstrap credentials now also carry the SSH host-key fingerprint.
+The Welcome page should expose a:
 
-The host key fingerprint is calculated using the SSH server key itself rather than relying on an unrelated connection property.
-13. Permanent SSH Connection
+Router Status
 
-Status: COMPLETE, SECURITY HARDENING REMAINS
+button.
 
-RouterConnection currently provides:
+The button should reflect the router's actual management connection state.
+Connected
 
-    SSH authentication using the controller key.
-    connection state.
-    command execution.
-    connection reuse behavior.
-    clean shutdown.
-    host-key fingerprint retrieval.
-    connection error handling.
+[ Router Status ]
 
-RouterConnectionManager provides a lifecycle abstraction above the raw connection.
+enabled.
+Not connected
 
-This keeps the Flask application from directly managing SSH sessions.
-14. NEXT: Secure Host-Key Verification
+The button should either be disabled or clearly indicate that the router is unavailable.
 
-Status: NEXT DEVELOPMENT TASK
+The UI should derive this state from the application rather than independently determining SSH connectivity.
+Phase 6 — Integrated Router Terminal
+16. Add a web terminal
 
-This is the next major security task.
-
-The current permanent connection must not ultimately rely on:
-
-AutoAddPolicy()
-
-as the final trust model.
-
-The desired model is:
-
-Known Router
-    │
-    ▼
-Expected SSH host-key fingerprint
-    │
-    ▼
-SSH connection
-    │
-    ▼
-Host key received
-    │
-    ├── MATCH ───────► CONNECT
-    │
-    └── MISMATCH ────► REJECT
-
-Required behavior:
-
-    Unknown router handling.
-    Known fingerprint accepted.
-    Matching fingerprint accepted.
-    Changed fingerprint rejected.
-    Fingerprint retrieved correctly.
-    Fingerprint persisted.
-    Fingerprint survives application restart.
-    Identity mismatch produces a clear connection failure.
-    No silent acceptance of a changed host key.
-
-Required tests:
-
-    unknown host key
-    matching host key
-    changed host key
-    fingerprint persistence
-    identity mismatch
-    connection rejection
-    bootstrap fingerprint becoming permanent router identity
-
-Security principle:
-
-    A router's SSH host key is an identity credential, not merely informational metadata.
-
-15. NEXT: Complete Persistent Router Lifecycle
-
-Status: PLANNED / HIGH PRIORITY
-
-After secure host-key verification, integrate the persistent state into normal startup and reconnection.
-
-Desired lifecycle:
-
-Pi boots
-   │
-   ▼
-Controller starts
-   │
-   ▼
-Load RouterState
-   │
-   ├── No state
-   │      │
-   │      ▼
-   │   Initial discovery
-   │
-   ▼
-Known router
-   │
-   ▼
-Try last known IP
-   │
-   ├── Success
-   │      │
-   │      ▼
-   │   Verify MAC/identity
-   │      │
-   │      ▼
-   │   Verify SSH host key
-   │      │
-   │      ▼
-   │   CONNECT
-   │
-   └── Failure
-          │
-          ▼
-      Local discovery
-          │
-          ▼
-      MAC verification
-          │
-          ▼
-      SSH host-key verification
-          │
-          ▼
-        CONNECT
-          │
-          ▼
-    Update RouterState
-
-This is the point where router persistence becomes operational rather than simply historical.
-16. Router Reconnection and DHCP Recovery
-
-Status: PLANNED
-
-The controller should tolerate routers changing IP addresses.
-
-Recovery should prioritize:
-
-    Last known IP.
-    Local network discovery.
-    MAC matching.
-    SSH host-key matching.
-    State update.
-
-The MAC and SSH fingerprint must prevent a newly discovered unrelated device from being mistaken for the known router.
-17. Router Information API
-
-Status: PLANNED
-
-The UI should not directly know how OpenWrt commands work.
-
-Introduce a normalized router information API.
+A terminal should become a first-class management feature.
 
 Conceptually:
 
-Router
-│
-└── RouterInformation
-    ├── system()
-    ├── network()
-    ├── security()
-    └── services()
+Administrator
+     │
+     │ Browser
+     ▼
+Router-PI-Assistant
+     │
+     │ SSH
+     ▼
+OpenWrt root shell
 
-Possible public operations:
+The terminal gives administrators complete router access even when a particular management function has not yet been implemented in the GUI.
 
-router.get_system_info()
-router.get_network_info()
-router.get_security_status()
-router.get_services()
+This is especially useful during development.
+17. Implement interactive SSH sessions
 
-The API should return application-friendly structures rather than raw SSH output.
-18. OpenWrt Integration Layer
+The existing execute() API is suitable for individual commands but not a true terminal.
 
-Status: PLANNED
+The terminal should eventually use an interactive SSH channel/PTY supporting:
 
-OpenWrt-specific commands should live behind an integration boundary.
+    persistent shell session
+    stdin
+    stdout
+    stderr
+    streaming output
+    Ctrl-C
+    terminal resize
+    long-running commands
+    clean session termination
 
-Target architecture:
+The architecture should become:
 
-Controller
-    │
-    ▼
-Router API
-    │
-    ▼
-OpenWrt Integration
-    │
-    ▼
-SSH
-    │
-    ▼
-OpenWrt
+Web Terminal
+     │
+     ▼
+Terminal Service
+     │
+     ▼
+RouterConnectionManager
+     │
+     ▼
+Interactive SSH channel
+     │
+     ▼
+OpenWrt shell
 
-Potential structure:
+The terminal should reuse the same trusted router connection infrastructure rather than creating an independent SSH implementation.
+Phase 7 — Router Network Management
+18. Implement structured network management
 
-integrations/
-└── openwrt/
-    ├── system.py
-    ├── network.py
-    ├── security.py
-    ├── services.py
-    └── capabilities.py
+Once status is working, build services around the router's network configuration.
 
-The core controller should not become tightly coupled to OpenWrt-specific files, commands, or implementation details.
-19. System Information
-
-Status: PLANNED
-
-Collect and normalize:
-
-    hostname
-    OpenWrt release/version
-    kernel version
-    target
-    architecture
-    CPU information
-    RAM
-    storage/flash
-    uptime
-    system load
-    installed packages
-    detected capabilities
-
-The information layer should be mock-testable without requiring a live router.
-20. Network Information
-
-Status: PLANNED
-
-Collect:
+Initial areas:
 
     interfaces
-    IPv4 addresses
-    IPv6 addresses where supported
+    IP addresses
+    DHCP
+    DNS
     routes
-    link state
-    interface statistics
-    VLAN information
-    bridge information
-    wireless information
+    WAN
+    LAN
+    wireless
+    firewall
 
-Wireless information should eventually include:
+The GUI should progressively expose common operations while the terminal remains available for advanced administration.
+19. Router configuration management
 
-    radios
-    bands
-    channels
-    SSIDs
-    AP/client state
+Introduce controlled configuration operations.
 
-21. Router Profile
+Potential areas:
 
-Status: PLANNED / ARCHITECTURAL DIRECTION
+    hostname
+    LAN configuration
+    WAN configuration
+    DHCP
+    DNS
+    wireless
+    firewall
+    services
 
-The persistent router profile should eventually describe the managed device comprehensively.
+The preferred architecture is:
 
-Potential profile:
+GUI operation
+      ↓
+Router service
+      ↓
+validated operation
+      ↓
+SSH
+      ↓
+OpenWrt
 
-RouterProfile
-├── manufacturer
-├── model
-├── hardware revision
-├── architecture
-├── CPU
-├── RAM
-├── flash/storage
-│
-├── identity
-│   ├── factory MAC
-│   ├── operational MAC
-│   └── SSH host key
-│
-├── firmware
-│   ├── OpenWrt version
-│   ├── target
-│   └── kernel
-│
-├── packages
-├── capabilities
-│
-├── interfaces
-├── wireless
-├── switch
-├── LEDs
-│
-└── current state
+rather than generating arbitrary shell commands in Flask routes.
+Phase 8 — Pi as Network Services Platform
 
-The profile should evolve from the currently implemented RouterState rather than replacing stable identity concepts.
-22. Dashboard / Home Page
+The project should now expand beyond router management.
 
-Status: PLANNED
+The Raspberry Pi becomes the host for services that complement OpenWrt.
+20. Pi-hole integration
 
-The first operational dashboard should expose normalized information rather than raw SSH commands.
+Provide management and status information for Pi-hole.
 
-Initial information:
+Potential GUI areas:
 
-    router connection status
-    router name
-    model
-    architecture
-    target
-    firmware
-    kernel
-    uptime
-    CPU/system load
-    memory usage
-    storage usage
-    network/interface status
-    last-seen information
-    identity status
-
-The UI should clearly distinguish:
-
-Connected
-Disconnected
-Unknown
-Authentication failure
-Identity mismatch
-Discovery required
-
-23. Diagnostics
-
-Status: FUTURE
-
-Provide read-only diagnostics such as:
-
-    SSH connectivity
-    router reachability
-    DNS status
-    network interface state
-    routing state
-    wireless state
-    system resource usage
     service status
-    storage status
-    log access
+    DNS status
+    blocked queries
+    query statistics
+    configuration
+    start/stop/restart
 
-Diagnostics should initially be read-only.
-24. Device History
+21. Unbound integration
 
-Status: FUTURE
+Provide management of the local recursive DNS resolver.
 
-Build on persistent router state to retain meaningful historical information.
+Potential functionality:
 
-Potential history:
+    service status
+    configuration
+    DNS health
+    resolver statistics
+    start/stop/restart
+    integration with Pi-hole
 
-    IP address changes
-    connection failures
-    SSH identity changes
-    firmware changes
-    package changes
-    configuration snapshots
-    uptime
-    resource statistics
-    interface changes
-    wireless changes
+22. Unified DNS architecture
 
-History must not undermine the stable identity model.
-25. Controlled Configuration
+Eventually the application should understand the intended DNS path:
 
-Status: FUTURE
+LAN Clients
+     │
+     ▼
+    Pi-hole
+     │
+     ▼
+   Unbound
+     │
+     ▼
+   Internet
 
-Only after reliable read-only management is established should the controller begin modifying router configuration.
+while Router-PI-Assistant manages the router-side DHCP/DNS configuration needed to make that architecture work.
+Phase 9 — Router as a Managed Appliance
+23. Router configuration profiles
 
-Configuration changes should be:
+Introduce higher-level configuration concepts.
 
-    explicit
-    validated
-    reversible where possible
-    logged
-    testable
-    limited to supported operations
+For example:
 
-Avoid building a generic "execute arbitrary command" web interface.
-26. Raspberry Pi Network Services
+Home Network
+Small Office
+Secure DNS
+Guest Network
+IoT Network
 
-Status: FUTURE
+The controller could eventually translate these into router configuration.
 
-Potential services include:
+This is where Router-PI-Assistant begins moving from a collection of management commands toward an actual configuration-management system.
+24. Configuration backup and restore
 
-    DHCP assistance
-    DNS assistance
-    network monitoring
-    router recovery
-    provisioning network support
-    local service discovery
+Implement router configuration lifecycle management:
 
-These capabilities must be designed carefully so the controller does not accidentally disrupt the network it is intended to manage.
-27. Advanced Network Functions
+Router
+  │
+  ├── Backup
+  │
+  ├── Restore
+  │
+  └── Compare
 
-Status: FUTURE
+Backups should be associated with the known router identity and managed carefully so that configurations cannot accidentally be restored to the wrong device.
+25. Firmware management
 
-Possible future functionality:
+Eventually support:
 
-    controlled routing changes
-    firewall management
-    VLAN configuration
-    wireless configuration
-    WAN/LAN management
-    service management
-    network diagnostics
-    backup/restore
+    firmware information
+    available firmware
+    upgrade preparation
+    firmware installation
+    reboot monitoring
+    post-upgrade verification
 
-These features depend on the completion of the read-only information and safety layers.
-28. Legacy 4 MB Router Support
+Firmware operations should be treated as high-risk operations with additional validation and recovery handling.
+Phase 10 — Management Access Control
+26. Router SSH exposure management
 
-Status: LONG-TERM OBJECTIVE
+The Pi should be the router's default SSH management path:
 
-A major project goal is support for severely resource-constrained OpenWrt hardware such as the Netgear WNR1000v2 class of devices.
+Pi → Router SSH       ENABLED
+LAN → Router SSH      DISABLED
+WAN → Router SSH      DISABLED
 
-The controller should therefore favor:
+The application should provide an explicit mechanism to allow secondary LAN SSH access when the administrator wants it.
 
-    lightweight SSH operations
-    minimal router-side dependencies
-    small command payloads
-    low memory usage
-    low storage requirements
-    external processing on the Raspberry Pi
-    graceful degradation when router capabilities are unavailable
+For example:
 
-The Raspberry Pi should perform as much processing as possible rather than requiring a large software stack on the router.
-29. Release and Packaging
+Router SSH Access
 
-Status: FUNCTIONAL / CONTINUING
+Pi management       ON
+LAN SSH access      OFF
 
-Current packaging path:
+[ Enable LAN SSH ]
 
-Source
-   │
-   ▼
-pybuild
-   │
-   ├── build wheel
-   ├── run tests
-   └── build Debian package
-          │
-          ▼
-       .deb
+This allows the Pi to remain the router's primary management authority without permanently preventing advanced users from connecting directly.
+27. Define the LAN management boundary
 
-Verified locally with version 0.4.4.
+The intended deployment model is:
 
-Release process should continue to guarantee:
+                    WAN / WWAN
+                        │
+                        X
+                        │
+                     Router
+                        │
+                       LAN
+                        │
+                ┌───────┴───────┐
+                │               │
+               Pi            LAN users
+                │
+        Router-PI-Assistant
 
-Python package version
-        =
-Debian changelog version
-        =
-Debian package version
-        =
-Git release tag
+The management application should be designed so that the administrative interface is intended for LAN access and is not accidentally exposed through WAN/WWAN interfaces.
+Phase 11 — Reliability & Monitoring
+28. Connection recovery
 
-Future releases should also verify the installed package, not merely the source tree.
-30. Development Environment Integrity
+Handle:
 
-Status: LESSON LEARNED / PROCESS REQUIREMENT
+    router reboot
+    SSH disconnects
+    network interruptions
+    stale connections
+    temporary router unavailability
 
-The project previously exposed a dangerous development condition:
+The controller should distinguish between connection failures and identity/security failures.
+29. Router state refresh
 
-source tree = newer code
-system package = older code
-pytest = older installed code
+Introduce regular or on-demand state refresh.
 
-This occurred because Python imported:
+For example:
 
-/usr/lib/python3/dist-packages/router_controller/
+Router
+ ├── Refresh status
+ ├── Refresh network
+ └── Refresh identity
 
-instead of:
+The controller should maintain accurate last_seen and connectivity information.
+30. Health monitoring
 
-src/router_controller/
+Eventually monitor both the router and Pi-hosted services.
 
-The correct resolution was to rebuild and install the Debian package.
+System Health
+├── Router
+│   ├── SSH
+│   ├── WAN
+│   ├── LAN
+│   └── DNS
+│
+└── Pi
+    ├── Pi-hole
+    ├── Unbound
+    └── Router-PI-Assistant
 
-Future development must explicitly distinguish:
-Source-tree tests
+Phase 12 — Persistence Architecture
+31. Complete the router repository
 
-PYTHONPATH=src pytest
+The remaining repository architecture should be finalized so the application has one clear persistent model for known routers.
 
-Installed-system tests
+It should support:
+
+    locating a router by MAC
+    loading persistent state
+    updating state
+    tracking router identity
+    handling changed IP addresses
+    recording timestamps
+
+The database should store persistent information; live SSH connections should remain transient application objects.
+Phase 13 — Testing & Validation
+32. Expand mocked integration tests
+
+Test complete workflows such as:
+
+Discovery
+   ↓
+Provisioning
+   ↓
+Persistence
+   ↓
+Connection
+   ↓
+Status collection
+   ↓
+Web presentation
+
+33. Add real-router integration tests
+
+Eventually maintain a separate hardware test category for a physical OpenWrt router.
+
+Normal development remains:
 
 pytest
 
-Both should be kept functional.
-
-The project should eventually configure the development tooling so contributors can run ordinary pytest from a checkout without accidentally testing a stale system installation.
-
-This should be addressed as development infrastructure work, not by weakening the system packaging model.
-31. Immediate Development Queue
-
-The next work should be performed in this order.
-Priority 1 — Secure SSH host-key verification
-
-Implement:
-
-    expected fingerprint handling
-    matching fingerprint acceptance
-    changed fingerprint rejection
-    unknown-key policy
-    clear identity mismatch errors
-    tests for all cases
-
-Do not move to large UI features before this security boundary is correct.
-Priority 2 — Complete persistent router lifecycle
-
-Implement:
-
-    startup state loading
-    last-known-IP connection
-    fallback discovery
-    MAC matching
-    SSH fingerprint matching
-    state updates
-    reconnect behavior
-
-Priority 3 — Improve development/package test isolation
-
-Ensure:
-
-pytest
-
-from the repository cannot silently test an unrelated stale system installation.
-
-Preserve the ability to test the actual installed Debian package separately.
-Priority 4 — Router Information API
-
-Introduce normalized system/network/security/service information.
-Priority 5 — OpenWrt integration layer
-
-Move OpenWrt-specific operations behind a clean integration boundary.
-Priority 6 — Read-only dashboard
-
-Expose router state and normalized information through the Flask application.
-32. Milestone Sequence
-
-The consolidated milestone sequence is:
-
-M0.0 — Development Foundation                 ✅
-   │
-   ▼
-M0.1 — Application Foundation                 ✅
-   │
-   ▼
-M0.2 — Debian Packaging                       ✅
-   │
-   ▼
-M0.3 — SSH Provisioning                       ✅
-   │
-   ▼
-M0.4 — Router Identity                        ✅
-   │
-   ▼
-M0.5 — Router State Persistence                ✅
-   │
-   ▼
-M0.6 — Network/MAC Discovery                  ✅
-   │
-   ▼
-M0.7 — Persistent SSH Connection              ✅
-   │
-   ▼
-M0.8 — Connection Manager                     ✅
-   │
-   ▼
-M0.9 — Secure Host-Key Verification           🔴 NEXT
-   │
-   ▼
-M1.0 — Complete Persistent Router Lifecycle   🟡
-   │
-   ▼
-M1.1 — Router Information API                 📋
-   │
-   ▼
-M1.2 — OpenWrt Integration                    📋
-   │
-   ▼
-M1.3 — Read-Only Dashboard                    📋
-   │
-   ▼
-M2.0 — Live Diagnostics                       📋
-   │
-   ▼
-M3.0 — Device History                         📋
-   │
-   ▼
-M4.0 — Controlled Configuration               📋
-   │
-   ▼
-M5.0 — Pi Network Services                    📋
-   │
-   ▼
-M6.0 — Advanced Network Functions             📋
-   │
-   ▼
-M7.0 — Legacy 4 MB Router Support             📋
-
-33. Session Accomplishments — 2026-09-07
-
-This section records the work completed during the development session so the next session does not need to reconstruct the context.
-Router repository integration
-
-Completed:
-
-    RouterStateRepository dependency added to RouterProvisioner.
-    Repository constructed by factory.py.
-    Repository injected into RouterProvisioner.
-    Provisioning saves router state.
-    Router state is built from bootstrap credentials and discovery data.
-    MAC address is required for persistent router state.
-
-Bootstrap fingerprint handling
-
-Completed:
-
-    Bootstrap obtains the remote SSH host key.
-    Host-key fingerprint is calculated from the Paramiko key bytes.
-    BootstrapCredentials carries the SSH fingerprint.
-    Tests were corrected to provide a real test host key rather than a mock/function.
-    All bootstrap tests pass.
-
-Provisioning tests
-
-Completed:
-
-    Provisioner tests updated for bootstrap credentials.
-    Router state persistence tested.
-    Bootstrap connection lifecycle tested.
-    Permanent connection lifecycle tested.
-    Repository save behavior tested.
-
-Test result
-
-Final system-wide test result:
-
-109 passed in 8.74s
-
-The important command was:
-
-pytest
-
-with no PYTHONPATH=src override.
-Debian packaging
-
-Completed:
-
-router-pi-controller 0.4.4
-
-Built:
-
-router-pi-controller_0.4.4_all.deb
-
-Installed successfully using:
-
-sudo dpkg -i ../router-pi-controller_0.4.4_all.deb
-
-The installed package was verified to contain the router repository integration.
-Important development lesson
-
-The earlier two application test failures were not caused by the current source tree.
-
-The system was loading the previously installed:
-
-router-pi-controller 0.4.3
-
-while the repository contained newer source code.
-
-Rebuilding and installing 0.4.4 resolved the discrepancy.
-
-This confirms that Debian packaging is part of the application's actual integration environment and must be tested as such.
-34. Next Session Starting Point
-
-When development resumes, start here:
-
-Current release: 0.4.4
-Tests: 109 passed
-Working tree: verify with git status
-Next milestone: M0.9 Secure Host-Key Verification
-
-Do not restart router discovery, SSH provisioning, router identity, or router state work unless a test demonstrates that those components are incomplete.
-
-The immediate architectural question is:
-
-    How does the permanent SSH connection prove that the router it is connecting to is the same router whose identity was previously established?
-
-The answer should use the persisted:
-
-MAC address
-+
-SSH host-key fingerprint
-
-and should reject identity mismatches.
-
-After that security boundary is complete, implement the startup/reconnect lifecycle using the persisted RouterState.
-35. Definition of Done for the Current Architecture
-
-The current router-management foundation will be considered complete when all of the following are true:
-
-    Router can be discovered.
-    Router MAC can be determined.
-    Router identity can be represented independently of IP.
-    Controller SSH keys can be generated.
-    Existing controller keys can be loaded.
-    Bootstrap SSH works.
-    Bootstrap credentials include host-key identity.
-    Controller public key can be installed.
-    Permanent SSH connection works.
-    Connection lifecycle is managed.
-    Router state can be persisted.
-    Router state can be loaded.
-    Initial provisioning saves router state.
-    Debian package builds.
-    Debian package installs.
-    System package contains current source.
-    Normal pytest runs against the installed application.
-    109 tests pass.
-    Permanent SSH verifies the expected host key.
-    Startup loads persisted router state.
-    DHCP/IP changes trigger identity-based rediscovery.
-    Router information is exposed through a normalized API.
-    OpenWrt-specific operations are isolated.
-    Read-only dashboard displays router information.
-
-36. Guiding Architecture
-
-The project should continue converging toward this architecture:
-
-                         Browser
-                            │
-                            ▼
-                     Flask Web UI
-                            │
-                            ▼
-                  Application Services
-                            │
-                            ▼
-                       Router API
-                            │
-                ┌───────────┴───────────┐
-                ▼                       ▼
-       Router State              OpenWrt Integration
-       Repository                       │
-                │                       ▼
-                │                Router Connection
-                │                       │
-                └───────────┐           ▼
-                            └───────► SSH
-                                      │
-                                      ▼
-                                   OpenWrt
-
-Identity should remain separate from location.
-
-Persistence should remain separate from communication.
-
-Communication should remain separate from the web UI.
-
-OpenWrt-specific behavior should remain separate from the core router model.
-
-Security verification should happen before a known router is trusted.
-
-The Raspberry Pi should perform heavyweight management work so the OpenWrt device can remain lightweight.
-37. Final Principle
-
-The project is no longer primarily an SSH provisioning script.
-
-It is becoming a persistent router management controller.
-
-The architectural progression should therefore remain:
-
-Discover
-   ↓
-Identify
-   ↓
-Bootstrap
-   ↓
-Persist
-   ↓
-Verify
-   ↓
-Reconnect
-   ↓
-Observe
-   ↓
-Manage
-
-Each layer should be independently testable and should build on the previous layer without collapsing responsibilities together.
-
-One important correction from the old roadmap: I marked the Debian/release foundation as effectively complete, but kept automated release/distribution work as continuing infrastructure rather than claiming the entire release system is finished. The existing roadmap describes GitHub Actions release building, tag/version validation, .deb creation, and artifact publishing as the intended release path.
-
-For the next session, the first line of attack should therefore be M0.9 Secure Host-Key Verification, not more database work. The database/state foundation is now good enough to support that security layer.
+while hardware-specific tests can be run separately.
+
+This prevents a physical router from becoming a prerequisite for normal application development.
+Phase 14 — Long-Term Platform
+
+Once the above pieces are mature, Router-PI-Assistant can become a unified network-management platform:
+
+                         LAN Administrator
+                                │
+                                ▼
+                 ┌──────────────────────────┐
+                 │   Router-PI-Assistant    │
+                 │                          │
+                 │ Dashboard                │
+                 │ Router Status             │
+                 │ Network Management        │
+                 │ Configuration             │
+                 │ Terminal                  │
+                 │ Service Management        │
+                 └────────────┬─────────────┘
+                              │
+              ┌───────────────┴────────────────┐
+              │                                │
+              ▼                                ▼
+        ┌───────────┐                    ┌─────────────┐
+        │  OpenWrt  │                    │ Raspberry Pi│
+        │  Router   │                    │  Services   │
+        └───────────┘                    └─────────────┘
+              │                                │
+       ┌──────┼───────┐                 ┌──────┼──────┐
+       │      │       │                 │      │      │
+      WAN    LAN    WiFi              Pi-hole Unbound ...
+
+The long-term goal is therefore not simply "a GUI for SSH."
+
+It is:
+
+    A Raspberry Pi-based management plane that securely controls an OpenWrt router, provides advanced network services, and gives the LAN administrator a unified interface for the entire network appliance.
+
+Immediate Development Queue
+
+Given the current 111/111 test baseline, I recommend we proceed in this exact order:
+
+    Define RouterStatus and the router status service.
+    Implement read-only OpenWrt system information collection.
+    Implement network information collection.
+    Add tests for command parsing and status generation.
+    Create the /router/status Flask route.
+    Build the Router Status page.
+    Add the connection-aware Router Status button to the Welcome page.
+    Test the complete status workflow against the physical router.
+    Design the interactive SSH/PTY abstraction.
+    Add the web terminal using the existing router connection architecture.
+    Begin structured router network/configuration management.
+    Begin Pi service integration with Pi-hole and Unbound.
+
+The immediate milestone is now:
+
+    A LAN user can open Router-PI-Assistant, see whether the Pi has a trusted SSH connection to the router, open Router Status, and inspect real read-only information collected directly from OpenWrt.
+
+Once that works against the actual router, the terminal becomes the natural next feature and gives us a powerful administrative fallback while the structured management APIs continue to grow.
