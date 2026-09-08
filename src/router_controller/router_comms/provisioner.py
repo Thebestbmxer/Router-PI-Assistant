@@ -138,32 +138,6 @@ class RouterProvisioner:
             connection_manager=manager,
         )
 
-'''
-        connection = self.connection_factory(candidate, key_pair)
-
-        try:
-            connection.connect()
-
-            if not connection.connected:
-                raise RuntimeError(
-                    "Router SSH connection was not established."
-                )
-            fingerprint = connection.host_key_fingerprint
-
-            if fingerprint is None:
-                raise RuntimeError(
-                    "Router SSH host key could not be determined."
-                )
-
-            return Router.from_connection(
-                candidate,
-                fingerprint,
-            )
-        finally:
-            connection.close()
-'''
-        #return candidate
-
     def _load_or_generate_key_pair(self) -> SSHKeyPair:
         """Load the controller key pair or create it when absent."""
 
