@@ -30,3 +30,6 @@ router_controller = [
     "ui/templates/*.html",
 	"ui/static/**/*",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
