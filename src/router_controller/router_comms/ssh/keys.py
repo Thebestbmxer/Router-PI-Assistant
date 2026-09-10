@@ -29,6 +29,10 @@ class SSHKeyManager:
     def __init__(self, key_directory: Path) -> None:
         self.key_directory = Path(key_directory)
 
+    def exists(self) -> bool:
+        return self.private_key_path.exists()
+
+
     def generate_key_pair(
         self,
         name: str = "controller",

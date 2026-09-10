@@ -4,15 +4,11 @@
 Router Pi Controller Setup
 {% endblock %}
 
-
 {% block content %}
-
 <div class="welcome">
 
     <header>
-        <h1>
-            Router Pi Controller
-        </h1>
+        <h1>Router Pi Controller</h1>
 
         <p>
             Initial setup requires discovering your router
@@ -23,9 +19,7 @@ Router Pi Controller Setup
 
     <section class="card">
 
-        <h2>
-            Router Setup
-        </h2>
+        <h2>Router Setup</h2>
 
 
         <div id="message"
@@ -39,9 +33,7 @@ Router Pi Controller Setup
         <div class="details">
 
             <div>
-                <label>
-                    Address
-                </label>
+                <label>Address</label>
 
                 <span id="address">
                     {{ status.address or "-" }}
@@ -50,9 +42,7 @@ Router Pi Controller Setup
 
 
             <div>
-                <label>
-                    SSH Port
-                </label>
+                <label>SSH Port</label>
 
                 <span id="port">
                     {{ status.ssh_port or "-" }}
@@ -79,56 +69,26 @@ Router Pi Controller Setup
                     disabled>
                 Continue
             </button>
-
         </div>
-
     </section>
-
 </div>
 
 
 
-<script>const message =
-    document.getElementById(
-        "message"
-    );
-
-const address =
-    document.getElementById(
-        "address"
-    );
-
-const port =
-    document.getElementById(
-        "port"
-    );
-
-
-const discoverButton =
-    document.getElementById(
-        "discover"
-    );
-
-const provisionButton =
-    document.getElementById(
-        "provision"
-    );
-
-const continueButton =
-    document.getElementById(
-        "continue"
-    );
+<script>
+    const message = document.getElementById("message");
+    const address = document.getElementById("address");
+    const port = document.getElementById("port");
+    const discoverButton = document.getElementById("discover");
+    const provisionButton = document.getElementById("provision");
+    const continueButton = document.getElementById("continue");
 
 
 function setMessage(text, type="")
 {
     message.textContent = text;
-
-    message.className =
-        "message " + type;
+    message.className = "message " + type;
 }
-
-
 
 async function discover()
 {
@@ -140,35 +100,18 @@ async function discover()
     discoverButton.disabled = true;
 
     try {
-
-        const response =
-            await fetch(
-                "/api/router/discover"
-            );
-
-
-        const data =
-            await response.json();
+        const response = await fetch("/api/router/discover");
+        const data = await response.json();
 
 
         if (!data.found)
         {
-            throw new Error(
-                data.error
-            );
+            throw new Error(data.error);
         }
 
-
-        address.textContent =
-            data.address;
-
-        port.textContent =
-            data.ssh_port;
-
-
-        provisionButton.disabled =
-            false;
-
+        address.textContent = data.address;
+        port.textContent = data.ssh_port;
+        provisionButton.disabled = false;
 
         setMessage(
             "Router discovered.",
@@ -201,39 +144,21 @@ async function provision()
         "working"
     );
 
-
-    provisionButton.disabled =
-        true;
-
+    provisionButton.disabled =true;
 
     try {
-
-        const response =
-            await fetch(
-                "/api/router/provision",
-                {
-                    method:"POST"
-                }
-            );
-
-
-        const data =
-            await response.json();
-
+        const response = await fetch("/api/router/provision", {method:"POST"});
+        const data = await response.json();
 
         if (!data.success)
         {
-            throw new Error(
-                data.error
-            );
+            throw new Error(data.error);
         }
-
 
         setMessage(
             data.message,
             "success"
         );
-
 
         continueButton.disabled = false;
     }
