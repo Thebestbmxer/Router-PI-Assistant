@@ -2,6 +2,13 @@
 
 from dataclasses import dataclass, field
 
+from router_controller.firmware_status_providers.registry import (
+    ProviderRegistry,
+)
+from router_controller.firmware_status_providers.provider import (
+    StatusProvider,
+)
+
 from router_controller.router_comms.discovery.router_discovery import (
     RouterCandidate,
 )
@@ -27,6 +34,11 @@ class Router:
 
     state: RouterState | None = None
     connection_manager: RouterConnectionManager | None = field(
+        default=None,
+        repr=False,
+    )
+
+    status_provider: StatusProvider | None = field(
         default=None,
         repr=False,
     )
@@ -77,3 +89,34 @@ class Router:
             state=state,
             connection_manager=connection_manager,
         )
+
+    @property
+    def firmware_status_provider(self) -> StatusProvider:
+        """
+        Return the firmware-specific status provider.
+
+        The provider is created only after a connection exists.
+        """
+
+        if self.status_provider is not None:
+            return self.status_provider
+
+        if self.connection_manager is None:
+            raise RuntimeError(
+                "Cannot create status provider without "
+                "a router connection."
+            )
+
+        if not self.connection_manager.connected:
+            raise RuntimeError(
+                "Router is not connected."
+            )
+
+        registry = ProviderRegistry()
+
+        self.status_provider = registry.get_provider(
+            self.connection_manager.connection,
+            self,
+        )
+
+        return self.status_provider
