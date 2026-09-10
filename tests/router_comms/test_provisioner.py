@@ -80,6 +80,11 @@ def provisioner(
     installer_factory = Mock(return_value=installer)
     connection_factory = Mock(return_value=connection)
 
+    detector = Mock()
+    detector.detect.return_value = FirmwareIdentity(
+        name="openwrt"
+    )
+
     instance = RouterProvisioner(
         key_manager=key_manager,
         discovery=discovery,
@@ -87,6 +92,7 @@ def provisioner(
         installer_factory=installer_factory,
         connection_factory=connection_factory,
         router_repository=router_repository,
+        detector_factory=lambda connection: detector,
     )
 
     instance.bootstrap_factory_mock = bootstrap_factory

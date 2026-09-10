@@ -128,9 +128,10 @@ class RouterProvisioner:
                 "Router SSH connection was not established."
             )
 
-        firmware_identity = FirmwareDetector(
+        firmware_identity = self.detector_factory(
             connection
         ).detect()
+
 
         fingerprint = connection.host_key_fingerprint
 
@@ -139,15 +140,13 @@ class RouterProvisioner:
                 "Router SSH host key could not be determined."
             )
 
-        router = Router.from_connection(
+        return Router.from_connection(
             candidate=candidate,
             host_key_fingerprint=fingerprint,
             state=state,
             connection_manager=manager,
+            firmware_identity=firmware_identity
         )
-        firmware_identity=firmware_identity
-
-        return router
 
     def _load_or_generate_key_pair(self) -> SSHKeyPair:
         """Load the controller key pair or create it when absent."""
