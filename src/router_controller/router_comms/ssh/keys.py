@@ -30,7 +30,16 @@ class SSHKeyManager:
         self.key_directory = Path(key_directory)
 
     def exists(self) -> bool:
-        return self.private_key_path.exists()
+        """Return whether a controller SSH key pair exists."""
+
+        private_key_path = self.key_directory / "controller"
+        public_key_path = self.key_directory / "controller.pub"
+
+        return (
+            private_key_path.exists()
+            and public_key_path.exists()
+        )
+
 
 
     def generate_key_pair(
