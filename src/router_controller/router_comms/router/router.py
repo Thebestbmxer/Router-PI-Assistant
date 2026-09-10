@@ -1,13 +1,8 @@
 """Router device representation."""
-
 from dataclasses import dataclass, field
 
-from router_controller.firmware_status_providers.registry import (
-    ProviderRegistry,
-)
-from router_controller.firmware_status_providers.provider import (
-    StatusProvider,
-)
+from router_controller.firmware_status_providers.registry import (ProviderRegistry)
+from router_controller.firmware_status_providers.provider import (StatusProvider)
 from router_controller.router_comms.discovery.firmware_detector import (
     FirmwareIdentity,
 )
@@ -21,11 +16,9 @@ from router_controller.router_comms.ssh.connection_manager import (
 )
 from router_controller.router_comms.ssh.keys import SSHKeyPair
 
-
 @dataclass
 class Router:
     """A known router managed by the controller."""
-
     identity: RouterIdentity
     candidate: RouterCandidate
 
@@ -36,10 +29,7 @@ class Router:
 
     state: RouterState | None = None
 
-    firmware_identity: FirmwareIdentity | None = field(
-        default=None,
-    )
-
+    firmware_identity: FirmwareIdentity | None = field(default=None)
     connection_manager: RouterConnectionManager | None = field(
         default=None,
         repr=False,
@@ -55,7 +45,6 @@ class Router:
         key_pair: SSHKeyPair,
     ) -> RouterConnectionManager:
         """Create the SSH connection manager for this router."""
-
         manager = RouterConnectionManager(
             candidate=self.candidate,
             key_pair=key_pair,
@@ -63,13 +52,11 @@ class Router:
         )
 
         self.connection_manager = manager
-
         return manager
 
     @property
     def connected(self) -> bool:
         """Return whether the router currently has an active SSH connection."""
-
         return (
             self.connection_manager is not None
             and self.connection_manager.connected
@@ -112,21 +99,15 @@ class Router:
             return self.status_provider
 
         if self.connection_manager is None:
-            raise RuntimeError(
-                "Router connection manager is unavailable."
-            )
+            raise RuntimeError("Router connection manager is unavailable.")
 
         connection = self.connection_manager.connection
 
         if connection is None:
-            raise RuntimeError(
-                "Router is not connected."
-            )
+            raise RuntimeError("Router is not connected.")
 
         if self.firmware_identity is None:
-            raise RuntimeError(
-                "Router firmware has not been detected."
-            )
+            raise RuntimeError("Router firmware has not been detected.")
 
         self.status_provider = (
             ProviderRegistry()
@@ -137,3 +118,21 @@ class Router:
         )
 
         return self.status_provider
+
+    def status(self):
+        """
+        Return complete router status.
+
+        Firmware-specific providers are hidden
+        behind the Router abstraction.
+        """
+        provider = self.firmware_status_provider
+        
+        from router_controller.router_comms.router.status import Status
+
+        return Status(
+            system=(provider.get_system_status()),
+            memory=(provider.get_memory_status()),
+            storage=(provider.get_storage_status()),
+            temperature=(provider.get_temperature_status()),
+        )
