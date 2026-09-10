@@ -1,4 +1,5 @@
 from router_controller.firmware_status_providers.provider import StatusProvider
+from router_controller.firmware_status_providers.exceptions import StatusCommandError
 from router_controller.router_comms.router.status import (
     MemoryStatus,
     StorageStatus,
@@ -21,7 +22,7 @@ class OpenWrtStatusProvider(StatusProvider):
         stdout, stderr, code = self.connection.execute(command)
 
         if code != 0:
-            return None
+            raise StatusCommandError(f"Command failed: {command}: {stderr}")
 
         return stdout.strip()
 
