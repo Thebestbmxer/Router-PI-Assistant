@@ -9,7 +9,6 @@ from .router_comms.factory import create_router_services
 from .ui import register_routes, register_ui_context
 from .ui.welcome_service import WelcomeService
 
-
 def create_app(config_class=Config, provision_router=None):
     """Create and configure the Flask application."""
 
@@ -24,18 +23,21 @@ def create_app(config_class=Config, provision_router=None):
     )
 
     app.config.from_object(config_class)
-
     initialize_database(config_class)
+    welcome_service = None
 
-    services = create_router_services(config_class)
+    if config_class is Config:
+        services = create_router_services(config_class)
 
-    if provision_router is None:
-        provision_router = services.provisioner.provision
+        if provision_router is None:
+            provision_router = (
+                services.provisioner.provision
+            )
 
-    welcome_service = WelcomeService(
-        router_repository=services.router_repository,
-        key_manager=services.key_manager,
-    )
+        welcome_service = WelcomeService(
+            router_repository=services.router_repository,
+            key_manager=services.key_manager,
+        )
 
     register_routes(
         app,
