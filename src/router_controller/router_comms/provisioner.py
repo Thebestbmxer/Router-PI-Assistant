@@ -98,9 +98,7 @@ class RouterProvisioner:
             candidate = self.discovery.discover()
 
         bootstrap = self.bootstrap_factory(candidate)
-        #client, _credentials = bootstrap.connect()
         client, credentials = bootstrap.connect()
-
 
         try:
             installer = self.installer_factory(client)
@@ -130,10 +128,9 @@ class RouterProvisioner:
                 "Router SSH connection was not established."
             )
 
-        firmware_identity = (
-            self.detector_factory(connection)
-            .detect()
-        )
+        firmware_identity = FirmwareDetector(
+            connection
+        ).detect()
 
         fingerprint = connection.host_key_fingerprint
 
@@ -142,13 +139,15 @@ class RouterProvisioner:
                 "Router SSH host key could not be determined."
             )
 
-        return Router.from_connection(
+        router = Router.from_connection(
             candidate=candidate,
             host_key_fingerprint=fingerprint,
             state=state,
             connection_manager=manager,
-            firmware_identity=firmware_identity,
         )
+        firmware_identity=firmware_identity
+
+        return router
 
     def _load_or_generate_key_pair(self) -> SSHKeyPair:
         """Load the controller key pair or create it when absent."""

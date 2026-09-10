@@ -1,7 +1,6 @@
 from unittest.mock import Mock
 from unittest.mock import MagicMock
 
-
 import pytest
 
 from router_controller.router_comms.discovery.router_discovery import RouterCandidate
@@ -11,6 +10,10 @@ from router_controller.router_comms.ssh.connection_manager import RouterConnecti
 from router_controller.router_comms.ssh.keys import SSHKeyPair
 from router_controller.router_comms.router.state import RouterState
 from router_controller.router_comms.router.repository import RouterStateRepository
+
+from router_controller.router_comms.discovery.firmware_detector import (
+    FirmwareIdentity,
+)
 
 @pytest.fixture
 def bootstrap_credentials():
