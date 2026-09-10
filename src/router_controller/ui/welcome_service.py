@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
-
 @dataclass(frozen=True)
 class WelcomeStatus:
     router_known: bool
-    ssh_key_valid: bool
+    ssh_key_present: bool
     ready: bool
 
 class WelcomeService:
@@ -17,30 +16,21 @@ class WelcomeService:
         self.key_manager = key_manager
 
     def get_status(self) -> WelcomeStatus:
-        return self.get_status()
-    '''
-        state = self.router_repository.load()
+        router_state = self.router_repository.load()
 
-        if state is None:
-            return WelcomeStatus(
-                router_known=False,
-                ssh_key_valid=False,
-                ready=False,
-            )
+        router_known = router_state is not None
 
         try:
             self.key_manager.load_key_pair()
-
+            ssh_key_present = True
         except FileNotFoundError:
-            return WelcomeStatus(
-                router_known=True,
-                ssh_key_valid=False,
-                ready=False,
-            )
+            ssh_key_present = False
 
         return WelcomeStatus(
-            router_known=True,
-            ssh_key_valid=True,
-            ready=True,
+            router_known=router_known,
+            ssh_key_present=ssh_key_present,
+            ready=(
+                router_known
+                and ssh_key_present
+            ),
         )
-    '''
