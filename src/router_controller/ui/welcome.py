@@ -13,21 +13,13 @@ def register_routes(app, provision_router, welcome_service=None):
     """Register the router provisioning welcome page."""
     @app.route("/")
     def index():
-        state = None
-
-        if welcome_service is not None:
-            state = welcome_service.get_status()
+        status = welcome_service.get_status()
 
         return render_template(
             "welcome.html",
-            state=state,
+            status=status,
         )
 
-    '''
-    @app.route("/")
-    def index():
-        return render_template("welcome.html")
-    '''
     @app.get("/api/router/status")
     def router_status_endpoint():
         logger.info("Router setup status requested")
@@ -50,6 +42,24 @@ def register_routes(app, provision_router, welcome_service=None):
             logger.exception("Unable to determine router setup status")
 
             return jsonify({"error": str(exc)}), 500
+
+    @app.get("/api/router/welcome/status")
+    def welcome_status():
+
+        status = welcome_service.get_status()
+
+        return jsonify(
+            {
+                "router_found": status.router_found,
+                "mac_known": status.mac_known,
+                "ssh_key_present": status.ssh_key_present,
+                "ssh_key_valid": status.ssh_key_valid,
+                "ready": status.ready,
+                "address": status.address,
+                "ssh_port": status.ssh_port,
+                "message": status.message,
+            }
+        )
 
     @app.get("/api/router/discover")
     def discover_router_endpoint():

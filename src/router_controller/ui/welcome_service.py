@@ -1,10 +1,5 @@
-from dataclasses import dataclass
+from .welcome_status import WelcomeStatus
 
-@dataclass(frozen=True)
-class WelcomeStatus:
-    router_known: bool
-    ssh_key_present: bool
-    ready: bool
 
 class WelcomeService:
     def __init__(
@@ -15,22 +10,35 @@ class WelcomeService:
         self.router_repository = router_repository
         self.key_manager = key_manager
 
-    def get_status(self) -> WelcomeStatus:
-        router_state = self.router_repository.load()
-
-        router_known = router_state is not None
+    def get_status(self):
+        status = WelcomeStatus()
 
         try:
-            self.key_manager.load_key_pair()
-            ssh_key_present = True
+            router_state = self.router_repository.load()
         except FileNotFoundError:
-            ssh_key_present = False
+            status.message = "No trusted router configured."
+            return status
 
-        return WelcomeStatus(
-            router_known=router_known,
-            ssh_key_present=ssh_key_present,
-            ready=(
-                router_known
-                and ssh_key_present
-            ),
+
+        if router_state is None:
+            status.message = "No trusted router configured."
+            return status
+
+        status.mac_known = True
+        status.mac_address = router_state.mac_address
+        status.address = router_state.ip_address
+        status.ssh_port = router_state.ssh_port
+
+        status.ssh_key_present = self.key_manager.exists()
+        status.ssh_key_valid = status.ssh_key_present
+        status.ready = (
+            status.mac_known
+            and status.ssh_key_valid
         )
+
+        if status.ready:
+            status.message = "Router trusted and ready."
+        else:
+            status.message = "Router requires SSH provisioning."
+
+        return status

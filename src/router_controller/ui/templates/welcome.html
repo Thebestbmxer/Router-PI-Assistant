@@ -1,272 +1,105 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - Router Pi Controller{% endblock %}
-
-{% block head %}
-
-<section class="welcome-header">
-    <h1>Router Pi Controller</h1>
-
-    <p>
-        Welcome. The controller must establish secure SSH access
-        to an Router before the application can continue.
-    </p>
-</section>
+{% block title %}
+Router Pi Controller Setup
 {% endblock %}
 
+
 {% block content %}
-<div id="router-state">
 
-    Searching for router...
+<div class="welcome">
 
-</div>
+    <h1>Router Pi Controller</h1>
 
-
-<button id="search">
-    Search Again
-</button>
+    <p id="message">
+        Checking router status...
+    </p>
 
 
-<button id="provision">
-    Install SSH Key
-</button>
+    <div id="router-info"></div>
 
 
-<select id="theme">
-    <option value="dark_harbor">
-        Dark Harbor
-    </option>
-</select>
+    <button id="search">
+        Search Again
+    </button>
 
 
-<button id="continue">
-    Proceed to Status Page
-</button>
+    <button id="provision" disabled>
+        Install SSH Key
+    </button>
 
-<div class="welcome-page">
-    <section class="router-discovery">
 
-        <h2>Router</h2>
+    <button id="continue" disabled>
+        Proceed to Status Page
+    </button>
 
-        <div id="router-status" class="status-message">
-            Searching for a router...
-        </div>
-
-        <div id="router-information" class="router-information hidden">
-
-            <div class="information-row">
-                <span class="information-label">Address</span>
-                <span id="router-address">—</span>
-            </div>
-
-            <div class="information-row">
-                <span class="information-label">SSH Port</span>
-                <span id="router-port">—</span>
-            </div>
-
-        </div>
-
-        <div class="button-group">
-
-            <button id="search-button"
-                    type="button">
-                Search Again
-            </button>
-
-            <button id="install-button"
-                    type="button"
-                    disabled>
-                Install SSH Key
-            </button>
-
-            <button id="proceed-button"
-                    type="button"
-                    disabled>
-                Proceed to Status Page
-            </button>
-        </div>
-
-    </section>
 
 </div>
-<style>
-    .welcome-page {
-        max-width: 720px;
-        margin: 0 auto;
-        padding: 32px 20px;
-    }
 
-    .welcome-header {
-        margin-bottom: 40px;
-    }
 
-        .welcome-header h1 {
-            margin-bottom: 12px;
-        }
+<script>async function refreshStatus()
+{
+    const response =
+        await fetch(
+            "/api/router/welcome/status"
+        );
 
-        .welcome-header p {
-            color: #666;
-            line-height: 1.6;
-        }
+    const status =
+        await response.json();
 
-    .router-discovery {
-        padding: 24px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background: #fff;
-    }
 
-    .status-message {
-        margin: 16px 0;
-        padding: 14px;
-        border-radius: 6px;
-        background: #f2f2f2;
-        white-space: pre-wrap;
-    }
+    document.getElementById("message")
+        .textContent =
+            status.message;
 
-        .status-message.success {
-            background: #e8f5e9;
-            color: #1b5e20;
-        }
 
-        .status-message.error {
-            background: #ffebee;
-            color: #b71c1c;
-        }
+    document.getElementById("router-info")
+        .textContent =
+            status.address
+            ? "Router: "
+              + status.address
+              + ":"
+              + status.ssh_port
+            : "";
 
-        .status-message.working {
-            background: #e3f2fd;
-            color: #0d47a1;
-        }
 
-    .router-information {
-        margin: 20px 0;
-        border-top: 1px solid #eee;
-        border-bottom: 1px solid #eee;
-    }
+    document.getElementById("provision")
+        .disabled =
+            status.ready;
 
-    .information-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 0;
-    }
 
-    .information-label {
-        font-weight: 600;
-    }
+    document.getElementById("continue")
+        .disabled =
+            !status.ready;
+}
 
-    .hidden {
-        display: none;
-    }
 
-    .button-group {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-top: 24px;
-    }
+document
+.getElementById("search")
+.addEventListener(
+    "click",
+    refreshStatus
+);
 
-    button {
-        padding: 12px 20px;
-        font-size: 16px;
-        cursor: pointer;
-        border: 1px solid #bbb;
-        border-radius: 6px;
-        background: #f5f5f5;
-    }
 
-        button:hover:not(:disabled) {
-            background: #e8e8e8;
-        }
+document
+.getElementById("provision")
+.addEventListener(
+    "click",
+    async () => {
 
-        button:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
-    #install-button {
-        background: #1976d2;
-        border-color: #1976d2;
-        color: white;
-    }
-
-        #install-button:hover:not(:disabled) {
-            background: #1565c0;
-        }
-</style>
-<script>
-    const statusElement = document.getElementById("router-status");
-    const informationElement = document.getElementById("router-information");
-    const addressElement = document.getElementById("router-address");
-    const portElement = document.getElementById("router-port");
-    const searchButton = document.getElementById("search-button");
-    const installButton = document.getElementById("install-button");
-    const proceedButton = document.getElementById("proceed-button");
-
-    function showStatus(message, type = "") {
-        statusElement.textContent = message;
-        statusElement.className = "status-message";
-        if (type) { statusElement.classList.add(type); }
-    }
-    function showRouter(address, port) {
-        addressElement.textContent = address;
-        portElement.textContent = port;
-        informationElement.classList.remove("hidden");
-        installButton.disabled = false;
-        proceedButton.disabled = true;
-    }
-    function clearRouter() {
-        addressElement.textContent = "—";
-        portElement.textContent = "—";
-        informationElement.classList.add("hidden");
-        installButton.disabled = true;
-        proceedButton.disabled = true;
-    }
-    async function discoverRouter() {
-        searchButton.disabled = true;
-        installButton.disabled = true;
-        proceedButton.disabled = true;
-        clearRouter();
-        showStatus("Searching for an OpenWrt router...", "working");
-        try {
-            const response = await fetch("/api/router/discover", {
-                method: "GET", cache: "no-store"
-            });
-            const result = await response.json();
-            if (!response.ok || !result.found) {
-                throw new Error(result.error || "No router was found.");
+        await fetch(
+            "/api/router/provision",
+            {
+                method:"POST"
             }
-            showRouter(result.address, result.ssh_port);
-            showStatus("Router discovered. You can now install the controller SSH key.", "success");
-        }
-        catch (error) {
-            clearRouter();
-            showStatus("Router discovery failed: " + error.message, "error");
-        }
-        finally { searchButton.disabled = false; }
+        );
+
+        refreshStatus();
     }
-    async function installSSHKey() {
-        searchButton.disabled = true;
-        installButton.disabled = true;
-        proceedButton.disabled = true;
-        showStatus("Connecting to the router, installing the SSH key, " + "and verifying keyed SSH access...", "working");
-        try {
-            const response = await fetch("/api/router/provision", { method: "POST" });
-            const result = await response.json(); if (!response.ok || !result.success) {
-                throw new Error(result.error || "SSH key installation failed.");
-            }
-            showRouter(result.address, result.ssh_port); showStatus(result.message, "success");
-            proceedButton.disabled = false;
-        } catch (error) {
-            showStatus("SSH key installation failed: " + error.message, "error");
-            installButton.disabled = false;
-            proceedButton.disabled = true;
-        } finally { searchButton.disabled = false; }
-    }
-    async function proceedToStatus() { } // Move to status page after SSH Key install
-    document.addEventListener("DOMContentLoaded", () => { discoverRouter(); });
-    searchButton.addEventListener("click", discoverRouter);
-    installButton.addEventListener("click", installSSHKey); // Automatically search when the welcome page loads. discoverRouter();</script>
-    proceedButton.addEventListener("click", proceedToStatus); // Proceed to Status
+);
+
+
+refreshStatus();</script>
 
 {% endblock %}
