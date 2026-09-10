@@ -319,6 +319,12 @@ def test_create_connection_manager(
 ):
     connection_factory = MagicMock()
 
+    detector = Mock()
+    detector.detect.return_value = FirmwareIdentity(
+        name="openwrt"
+    )
+
+
     provisioner = RouterProvisioner(
         key_manager=MagicMock(),
         discovery=MagicMock(),
@@ -326,6 +332,7 @@ def test_create_connection_manager(
         installer_factory=MagicMock(),
         connection_factory=connection_factory,
         router_repository=MagicMock(),
+        detector_factory=lambda connection: detector
     )
 
     manager = provisioner.create_connection_manager(

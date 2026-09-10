@@ -63,7 +63,10 @@ class RouterProvisioner:
             RouterConnection,
         ],
         router_repository: RouterStateRepository,
-
+        detector_factory: Callable[
+            [RouterConnection],
+            FirmwareDetector,
+        ] = FirmwareDetector,
     ) -> None:
         self.key_manager = key_manager
         self.discovery = discovery
@@ -71,7 +74,7 @@ class RouterProvisioner:
         self.installer_factory = installer_factory
         self.connection_factory = connection_factory
         self.router_repository = router_repository
-
+        self.detector_factory = detector_factory
 
     def provision(
         self,
@@ -127,10 +130,10 @@ class RouterProvisioner:
                 "Router SSH connection was not established."
             )
 
-        firmware_identity = FirmwareDetector(
-            connection
-        ).detect()
-
+        firmware_identity = (
+            self.detector_factory(connection)
+            .detect()
+        )
 
         fingerprint = connection.host_key_fingerprint
 
