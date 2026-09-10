@@ -43,6 +43,7 @@ def register_routes(app, provision_router):
                 "connected": result.connected,
                 "address": result.candidate.address,
                 "ssh_port": result.candidate.ssh_port,
+                "mac_address": result.candidate.mac_address
             }
 
             if result.error is not None:
@@ -77,6 +78,28 @@ def register_routes(app, provision_router):
             ), 503
 
         try:
+            router = provision_router()
+
+            return jsonify(
+                {
+                    "success": True,
+                    "address": router.candidate.address,
+                    "ssh_port": router.candidate.ssh_port,
+                    "mac_address": router.identity.mac_address,
+                    "ssh_verified": True,
+                    "firmware": (
+                        router.firmware_identity.name
+                        if router.firmware_identity
+                        else None
+                    ),
+                    "message": (
+                        "SSH key installed and keyed SSH connection "
+                        "verified."
+                    ),
+                }
+            )
+
+            '''
             candidate = provision_router()
 
             return jsonify(
@@ -90,6 +113,7 @@ def register_routes(app, provision_router):
                     ),
                 }
             )
+        '''
 
         except Exception as exc:
             logger.exception("Router provisioning failed")
