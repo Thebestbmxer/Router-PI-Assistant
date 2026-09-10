@@ -16,7 +16,7 @@ def register_routes(app, provision_router, welcome_service=None):
         state = None
 
         if welcome_service is not None:
-            state = welcome_service.get_state()
+            state = welcome_service.get_status()
 
         return render_template(
             "welcome.html",
