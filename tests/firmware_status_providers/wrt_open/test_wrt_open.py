@@ -41,9 +41,9 @@ class FakeConnection:
         )
 
 
-def test_openwrt_system_status():
+def test_wrt_open_system_status():
 
-    provider = OpenWrtStatusProvider(
+    provider = WrtOpenStatusProvider(
         FakeConnection()
     )
 
@@ -60,9 +60,9 @@ def test_openwrt_system_status():
     )
 
 
-def test_openwrt_memory_status():
+def test_wrt_open_memory_status():
 
-    provider = OpenWrtStatusProvider(
+    provider = WrtOpenStatusProvider(
         FakeConnection()
     )
 
