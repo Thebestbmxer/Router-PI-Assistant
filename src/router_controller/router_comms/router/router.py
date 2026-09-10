@@ -126,9 +126,9 @@ class Router:
         Firmware-specific providers are hidden
         behind the Router abstraction.
         """
-        provider = self.firmware_status_provider
-        
         from router_controller.router_comms.router.status import Status
+
+        provider = self.firmware_status_provider
 
         return Status(
             system=(provider.get_system_status()),
