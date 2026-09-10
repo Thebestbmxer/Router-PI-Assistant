@@ -27,20 +27,27 @@ def create_app(config_class=Config, provision_router=None):
 
     initialize_database(config_class)
 
-    if provision_router is None and config_class is Config:
+    services = None
 
+    if config_class is Config:
         services = create_router_services(config_class)
-        provision_router = (services.provisioner.provision)
+
+        if provision_router is None:
+            provision_router = (services.provisioner.provision)
+
+    if services is not None:
+        welcome_service = WelcomeService(
+            router_repository=services.router_repository,
+            key_manager=services.key_manager,
+        )
+    else:
+        welcome_service = None
 
     '''
     if provision_router is None and config_class is Config:
         provisioner = create_router_provisioner(config_class)
         provision_router = provisioner.provision
         '''
-    welcome_service = WelcomeService(
-        router_repository=services.router_repository,
-        key_manager=services.key_manager,
-    )
 
     register_routes(app, provision_router, welcome_service)
     register_ui_context(app)
