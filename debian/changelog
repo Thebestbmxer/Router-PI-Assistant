@@ -1,3 +1,9 @@
+router-pi-controller (0.5.1) unstable; urgency=medium
+
+  * Building UI
+  
+ -- OpenWrt Pi Controller Project <Need_Email@willgethere.me>  Tur, 10 Sep 2026 07:09:00 -0800
+
 router-pi-controller (0.5.0) unstable; urgency=medium
 
   * Complete:
