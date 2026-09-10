@@ -38,58 +38,28 @@ class OpenWrtStatusProvider(StatusProvider):
     def get_system_status(self) -> SystemStatus:
 
         release = parse_release(
-            self._run(
-                commands.SYSTEM_RELEASE
-            ) or ""
+            self._run(commands.SYSTEM_RELEASE)
+            or ""
         )
 
         return SystemStatus(
             hostname=(
-                self._run(
-                    commands.HOSTNAME
-                )
+                self._run(commands.HOSTNAME)
                 or "unknown"
             ),
 
             model=None,
 
-            architecture=(
-                release.get(
-                    "DISTRIB_ARCH"
-                )
-            ),
-
-            target_platform=(
-                release.get(
-                    "DISTRIB_TARGET"
-                )
-            ),
-
-            firmware_version=(
-                release.get(
-                    "DISTRIB_RELEASE"
-                )
-            ),
-
-            kernel_version=(
-                self._run(
-                    commands.KERNEL
-                )
-            ),
+            architecture=(release.get("DISTRIB_ARCH")),
+            target_platform=(release.get("DISTRIB_TARGET")),
+            firmware_version=(release.get("DISTRIB_RELEASE")),
+            kernel_version=(self._run(commands.KERNEL)),
 
             local_time=None,
-
-            uptime=(
-                self._run(
-                    commands.UPTIME
-                )
-            ),
-
+            uptime=(self._run(commands.UPTIME)),
             load_average=(
                 parse_load_average(
-                    self._run(
-                        commands.LOAD_AVERAGE
-                    )
+                    self._run(commands.LOAD_AVERAGE)
                     or ""
                 )
             ),
@@ -97,25 +67,16 @@ class OpenWrtStatusProvider(StatusProvider):
 
 
     def get_memory_status(self) -> MemoryStatus:
-
         memory = parse_meminfo(
-            self._run(
-                commands.MEMORY
-            )
+            self._run(commands.MEMORY)
             or ""
         )
 
-        total = memory.get(
-            "MemTotal"
-        )
-
-        available = memory.get(
-            "MemAvailable"
-        )
+        total = memory.get("MemTotal")
+        available = memory.get("MemAvailable")
 
         return MemoryStatus(
             total=total,
-
             available=available,
 
             used=(
@@ -125,21 +86,14 @@ class OpenWrtStatusProvider(StatusProvider):
                 else None
             ),
 
-            cached=memory.get(
-                "Cached"
-            ),
-
-            swap_free=memory.get(
-                "SwapFree"
-            ),
+            cached=memory.get("Cached"),
+            swap_free=memory.get("SwapFree"),
         )
 
 
     def get_storage_status(self):
         storage = parse_storage(
-            self._run(
-                commands.STORAGE
-            )
+            self._run(commands.STORAGE)
             or ""
         )
 
@@ -153,9 +107,7 @@ class OpenWrtStatusProvider(StatusProvider):
         )
 
     def get_temperature_status(self):
-        value = self._run(
-            commands.TEMPERATURE
-        )
+        value = self._run(commands.TEMPERATURE)
 
         if value is None:
             return None

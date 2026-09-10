@@ -60,36 +60,25 @@ def parse_meminfo(
 
     return result
 
-def parse_storage(
-    output: str,
-) -> dict[str, int]:
-
-    result = {}
-
-    lines = output.splitlines()
-
-    if len(lines) < 2:
-        return result
-
-
-    for line in lines[1:]:
-
+def parse_storage(output: str) -> dict[str, int]:
+    for line in output.splitlines():
         parts = line.split()
 
         if len(parts) < 6:
             continue
 
+        # Skip header line
+        if parts[0].lower() == "filesystem":
+            continue
+
         try:
-            result = {
+            return {
                 "total": int(parts[1]) * 1024,
                 "used": int(parts[2]) * 1024,
                 "available": int(parts[3]) * 1024,
             }
 
-            break
-
         except ValueError:
             continue
 
-
-    return result
+    return {}
