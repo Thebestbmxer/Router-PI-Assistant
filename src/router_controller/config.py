@@ -41,6 +41,10 @@ class Config:
     def get_ssh_public_key_path(cls):
         return cls.get_ssh_key_directory() / "controller.pub"
 
+    @classmethod
+    def get_router_state_path(cls):
+        return cls.get_data_dir() / "router_state.json"
+
     # Web application
     HOST = os.getenv("ROUTER_CONTROLLER_HOST", "0.0.0.0")
     PORT = int(os.getenv("ROUTER_CONTROLLER_PORT", "8080"))
@@ -64,6 +68,3 @@ class Config:
         os.getenv("ROUTER_CONTROLLER_SSH_TIMEOUT", "10")
     )
 
-    @classmethod
-    def get_router_state_path(cls) -> Path:
-        return cls.DATA_DIR / "router_state.json"
