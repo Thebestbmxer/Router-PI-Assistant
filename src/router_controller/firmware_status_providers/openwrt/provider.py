@@ -18,10 +18,8 @@ from .parsers import (
 
 
 class OpenWrtStatusProvider(StatusProvider):
-
     def __init__(self, connection):
         self.connection = connection
-
 
     def _run(self, command: str) -> str | None:
 
@@ -34,9 +32,7 @@ class OpenWrtStatusProvider(StatusProvider):
 
         return stdout.strip()
 
-
     def get_system_status(self) -> SystemStatus:
-
         release = parse_release(
             self._run(commands.SYSTEM_RELEASE)
             or ""

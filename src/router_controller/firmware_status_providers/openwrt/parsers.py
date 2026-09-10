@@ -64,7 +64,7 @@ def parse_storage(output: str) -> dict[str, int]:
     for line in output.splitlines():
         parts = line.split()
 
-        if len(parts) < 6:
+        if len(parts) < 5:
             continue
 
         # Skip header line
