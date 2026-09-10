@@ -13,12 +13,16 @@ def register_routes(app, provision_router, welcome_service=None):
     """Register the router provisioning welcome page."""
     @app.route("/")
     def index():
-        state = welcome_service.get_state()
+        state = None
+
+        if welcome_service is not None:
+            state = welcome_service.get_state()
 
         return render_template(
             "welcome.html",
-            router_state=state,
+            state=state,
         )
+
     '''
     @app.route("/")
     def index():
