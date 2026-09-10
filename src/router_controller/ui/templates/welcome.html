@@ -9,97 +9,292 @@ Router Pi Controller Setup
 
 <div class="welcome">
 
-    <h1>Router Pi Controller</h1>
+    <header>
+        <h1>
+            Router Pi Controller
+        </h1>
 
-    <p id="message">
-        Checking router status...
-    </p>
-
-
-    <div id="router-info"></div>
-
-
-    <button id="search">
-        Search Again
-    </button>
+        <p>
+            Initial setup requires discovering your router
+            and installing secure SSH access.
+        </p>
+    </header>
 
 
-    <button id="provision" disabled>
-        Install SSH Key
-    </button>
+    <section class="card">
+
+        <h2>
+            Router Setup
+        </h2>
 
 
-    <button id="continue" disabled>
-        Proceed to Status Page
-    </button>
+        <div id="message"
+             class="message">
 
+            {{ status.message }}
+
+        </div>
+
+
+        <div class="details">
+
+            <div>
+                <label>
+                    Address
+                </label>
+
+                <span id="address">
+                    {{ status.address or "-" }}
+                </span>
+            </div>
+
+
+            <div>
+                <label>
+                    SSH Port
+                </label>
+
+                <span id="port">
+                    {{ status.ssh_port or "-" }}
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="actions">
+
+            <button id="discover">
+                Discover Router
+            </button>
+
+
+            <button id="provision"
+                    disabled>
+                Install SSH Key
+            </button>
+
+
+            <button id="continue"
+                    disabled>
+                Continue
+            </button>
+
+        </div>
+
+    </section>
 
 </div>
 
 
-<script>async function refreshStatus()
+
+<script>const message =
+    document.getElementById(
+        "message"
+    );
+
+const address =
+    document.getElementById(
+        "address"
+    );
+
+const port =
+    document.getElementById(
+        "port"
+    );
+
+
+const discoverButton =
+    document.getElementById(
+        "discover"
+    );
+
+const provisionButton =
+    document.getElementById(
+        "provision"
+    );
+
+const continueButton =
+    document.getElementById(
+        "continue"
+    );
+
+
+function setMessage(text, type="")
 {
-    const response =
-        await fetch(
-            "/api/router/welcome/status"
-        );
+    message.textContent = text;
 
-    const status =
-        await response.json();
-
-
-    document.getElementById("message")
-        .textContent =
-            status.message;
-
-
-    document.getElementById("router-info")
-        .textContent =
-            status.address
-            ? "Router: "
-              + status.address
-              + ":"
-              + status.ssh_port
-            : "";
-
-
-    document.getElementById("provision")
-        .disabled =
-            status.ready;
-
-
-    document.getElementById("continue")
-        .disabled =
-            !status.ready;
+    message.className =
+        "message " + type;
 }
 
 
-document
-.getElementById("search")
-.addEventListener(
-    "click",
-    refreshStatus
-);
+
+async function discover()
+{
+    setMessage(
+        "Searching for router...",
+        "working"
+    );
+
+    discoverButton.disabled = true;
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/router/discover"
+            );
 
 
-document
-.getElementById("provision")
-.addEventListener(
-    "click",
-    async () => {
+        const data =
+            await response.json();
 
-        await fetch(
-            "/api/router/provision",
-            {
-                method:"POST"
-            }
+
+        if (!data.found)
+        {
+            throw new Error(
+                data.error
+            );
+        }
+
+
+        address.textContent =
+            data.address;
+
+        port.textContent =
+            data.ssh_port;
+
+
+        provisionButton.disabled =
+            false;
+
+
+        setMessage(
+            "Router discovered.",
+            "success"
         );
 
-        refreshStatus();
     }
-);
+
+    catch(error)
+    {
+        setMessage(
+            error.message,
+            "error"
+        );
+    }
+
+    finally
+    {
+        discoverButton.disabled =
+            false;
+    }
+}
 
 
-refreshStatus();</script>
+
+async function provision()
+{
+    setMessage(
+        "Installing SSH key...",
+        "working"
+    );
+
+
+    provisionButton.disabled =
+        true;
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/router/provision",
+                {
+                    method:"POST"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success)
+        {
+            throw new Error(
+                data.error
+            );
+        }
+
+
+        setMessage(
+            data.message,
+            "success"
+        );
+
+
+        continueButton.disabled = false;
+    }
+
+    catch(error)
+    {
+        provisionButton.disabled = false;
+
+        setMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+discoverButton.onclick = discover;
+provisionButton.onclick = provision;</script>
+
+<style>
+    .welcome {
+        max-width: 700px;
+        margin: auto;
+        padding: 40px;
+    }
+
+    header {
+        margin-bottom: 30px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        border: 1px solid #ddd;
+    }
+
+    .message {
+        margin: 20px 0;
+        padding: 15px;
+        background: #eee;
+        border-radius: 6px;
+    }
+
+        .message.success {background: #dff5df;}
+        .message.error   {background: #ffdede;}
+        .message.working {background: #ddeeff;}
+
+    .details div {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+    }
+
+    .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+    }
+
+    button {padding: 12px 18px;}
+</style>
+
 
 {% endblock %}
