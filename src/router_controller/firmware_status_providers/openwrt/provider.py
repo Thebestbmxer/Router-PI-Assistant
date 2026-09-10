@@ -97,9 +97,13 @@ class OpenWrtStatusProvider(StatusProvider):
             return None
 
         return StorageStatus(
-            total=storage.get("total"),
-            used=storage.get( "used"),
-            available=storage.get("available"),
+            disk_total=storage.get("total"),
+            disk_available=storage.get("available"),
+            disk_used=storage.get("used"),
+
+            temporary_total=None,
+            temporary_available=None,
+            temporary_used=None,
         )
 
     def get_temperature_status(self):

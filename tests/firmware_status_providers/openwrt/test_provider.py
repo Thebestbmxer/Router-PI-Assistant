@@ -24,5 +24,6 @@ def test_storage_status():
     provider = OpenWrtStatusProvider(FakeConnection())
     result = (provider.get_storage_status())
 
-    assert result.total == 15360 * 1024
-    assert result.used == 9000 * 1024
+    assert result.disk_total == 15360 * 1024
+    assert result.disk_used == 9000 * 1024
+    assert result.disk_available == 6360 * 1024
