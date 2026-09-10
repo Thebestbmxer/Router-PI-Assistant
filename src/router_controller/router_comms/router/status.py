@@ -35,7 +35,7 @@ class StorageStatus:
 
 @dataclass(frozen=True)
 class Status:
-    system: RouterSystemStatus
-    memory: RouterMemoryStatus
-    storage: RouterStorageStatus
+    system: SystemStatus
+    memory: MemoryStatus
+    storage: StorageStatus
     temperature: float | None

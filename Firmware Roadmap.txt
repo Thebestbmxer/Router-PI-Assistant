@@ -1,0 +1,458 @@
+Firmware Status Provider Development Roadmap
+
+Repository: https://github.com/Thebestbmxer/Router-PI-Assistant
+
+This roadmap defines the next development phase of the project: separating firmware-specific router communication from the generic management layer while keeping the existing application architecture clean and extensible.
+
+The repository already uses a src/ package layout, system packaging, systemd integration, and a growing router communication/test suite.
+1. Establish the Provider Architecture
+
+Create the firmware-specific backend boundary:
+
+src/router_controller/router_comms/
+└── firmware_status_providers/
+    ├── __init__.py
+    ├── base.py
+    ├── openwrt.py
+    ├── ddwrt.py
+    └── netgear.py
+
+The purpose of this package is to contain only firmware-specific communication and interpretation logic.
+
+The rest of the application must not need to know whether a router runs OpenWrt, DD-WRT, Netgear firmware, or another supported firmware.
+
+The provider layer will be responsible for translating firmware-specific command output into the application's common status models.
+2. Define the Provider Interface
+
+Create an abstract/common provider contract in:
+
+firmware_status_providers/base.py
+
+The interface should define the operations required by the application without containing firmware-specific implementation.
+
+The initial interface should support retrieval of:
+
+    System status
+    Memory status
+    Disk/storage status
+    Temperature status
+
+The interface should operate against the existing authenticated SSH connection rather than creating its own SSH connection.
+
+Conceptually:
+
+SSH Connection
+      │
+      ▼
+Firmware Status Provider
+      │
+      ▼
+Common Status Models
+      │
+      ▼
+Web Application
+
+This keeps SSH transport, firmware interpretation, and presentation separate.
+3. Use the Existing Status Models as the Application Contract
+
+The renamed models are now the canonical representation of router information.
+
+Examples include:
+
+SystemStatus
+MemoryStatus
+
+Additional models should be introduced only where the information represents a genuinely separate domain.
+
+The models should describe what the router reports, not how a particular firmware reports it.
+
+For example:
+
+SystemStatus
+├── hostname
+├── model
+├── architecture
+├── target_platform
+├── firmware_version
+├── kernel_version
+├── local_time
+├── uptime
+└── load_average
+
+And:
+
+MemoryStatus
+├── total
+├── available
+├── used
+├── cached
+├── swap_free
+├── disk_space
+└── temp_space
+
+The exact existing field names should be preserved where they have already been established rather than unnecessarily redesigning the models.
+4. Implement the OpenWrt Provider First
+
+OpenWrt is the primary firmware target and should become the reference implementation.
+
+Create:
+
+firmware_status_providers/openwrt.py
+
+The provider should collect the required information through read-only SSH commands available on OpenWrt.
+
+The implementation should:
+
+    Execute commands through the existing connection abstraction.
+    Parse command output internally.
+    Convert the results into SystemStatus and MemoryStatus.
+    Never expose raw command output to the web layer.
+    Gracefully handle missing optional information.
+    Raise well-defined application exceptions when required information cannot be obtained.
+
+The OpenWrt provider becomes the standard against which subsequent firmware providers are designed.
+5. Build Provider Detection
+
+The application needs to determine which provider should manage a connected router.
+
+Provider detection should use information already available from the router rather than relying solely on the hardware manufacturer.
+
+The detection sequence should be approximately:
+
+Connect
+   │
+   ▼
+Identify firmware/platform
+   │
+   ├── OpenWrt → OpenWrtProvider
+   ├── DD-WRT → DDWRTProvider
+   ├── Netgear → NetgearProvider
+   └── Unknown → Generic/Unsupported Provider
+
+Detection should be isolated from individual providers.
+
+Do not scatter firmware checks throughout the application.
+6. Create a Provider Registry
+
+Introduce a small registry/factory responsible for selecting providers.
+
+Conceptually:
+
+ProviderRegistry
+       │
+       ├── OpenWrtProvider
+       ├── DDWRTProvider
+       ├── NetgearProvider
+       └── ...
+
+The rest of the application should request:
+
+provider = provider_registry.get(router)
+
+rather than importing a specific firmware implementation.
+
+This allows additional firmware support to be added without modifying the status page or core router management code.
+7. Connect Providers to the Existing Router Object
+
+The Router object should eventually have access to its selected firmware provider.
+
+The relationship should remain:
+
+Router
+ ├── Identity
+ ├── Candidate
+ ├── State
+ ├── ConnectionManager
+ └── FirmwareStatusProvider
+
+The provider should not replace RouterConnectionManager.
+
+The connection manager remains responsible for SSH connectivity.
+
+The provider remains responsible for understanding the connected firmware.
+8. Implement the Status Service Layer
+
+Add an application-facing service between the web routes and firmware providers.
+
+For example:
+
+router_comms/
+    status_service.py
+
+Its purpose is to provide a clean interface such as:
+
+get_system_status()
+get_memory_status()
+
+The web application should communicate with this service rather than directly invoking OpenWrt commands.
+
+The resulting architecture becomes:
+
+Web Route
+    │
+    ▼
+Status Service
+    │
+    ▼
+Firmware Provider
+    │
+    ▼
+Connection Manager
+    │
+    ▼
+SSH
+    │
+    ▼
+Router
+
+This separation is important before additional firmware implementations are introduced.
+9. Complete the Status Page
+
+The existing status page should consume the common status models.
+
+The first version should display:
+System
+
+    Hostname
+    Model
+    Architecture
+    Target platform
+    Firmware version
+    Kernel version
+    Local time
+    Uptime
+    Load average
+
+Memory / Storage
+
+    Total memory
+    Available memory
+    Used memory
+    Cached memory
+    Free swap
+    Disk space
+    Temporary filesystem space
+
+The page should not contain firmware-specific parsing logic.
+10. Add Status Page Error States
+
+The status page should explicitly distinguish between:
+
+    Router disconnected
+    SSH connection unavailable
+    Firmware not recognized
+    Provider unavailable
+    Command failed
+    Individual metric unavailable
+
+A failure retrieving one optional metric should not necessarily make the entire status page unusable.
+
+For example:
+
+Hostname       router
+Model          WNR1000v2
+Firmware       Unknown
+Kernel         4.x.x
+Temperature    Unavailable
+
+is preferable to failing the entire request.
+11. Add OpenWrt Provider Tests
+
+Create tests specifically for the provider layer:
+
+tests/router_comms/firmware_status_providers/
+├── test_openwrt.py
+├── test_base.py
+└── ...
+
+Tests should verify:
+
+    Correct commands are executed.
+    Representative OpenWrt output is parsed correctly.
+    Malformed output is handled safely.
+    Missing values are handled correctly.
+    SSH command failures are translated appropriately.
+    Returned objects are the correct common status models.
+
+Use mocked SSH connections.
+
+No physical router should be required for the provider test suite.
+12. Add Provider Detection Tests
+
+Test the detection layer independently.
+
+Cases should include:
+
+    OpenWrt detected correctly.
+    DD-WRT detected correctly.
+    Netgear firmware detected correctly.
+    Unknown firmware handled correctly.
+    Detection failure handled safely.
+
+The tests should ensure that adding a new provider does not alter existing provider behavior.
+13. Add DD-WRT Support
+
+After OpenWrt is stable, implement:
+
+firmware_status_providers/ddwrt.py
+
+DD-WRT should translate its own command/output conventions into the existing common models.
+
+No DD-WRT-specific concepts should leak into the status models unless they represent information useful to all supported firmware.
+14. Add Native Netgear Firmware Support
+
+Implement:
+
+firmware_status_providers/netgear.py
+
+This provider represents routers running manufacturer firmware rather than OpenWrt-derived firmware.
+
+The provider should use whatever supported management mechanism is available on the particular firmware.
+
+The architecture must allow a provider to report that a particular capability is unsupported rather than forcing every firmware to provide identical functionality.
+
+This establishes the project's broader compatibility goal:
+
+OpenWrt
+DD-WRT
+Netgear
+Other supported firmware
+        │
+        ▼
+Common Management Interface
+
+15. Establish Capability Reporting
+
+Different firmware will not expose identical functionality.
+
+Introduce a capability concept so the UI can determine what is supported.
+
+For example:
+
+Capabilities
+├── status
+├── memory
+├── storage
+├── temperature
+├── network
+├── interfaces
+├── firewall
+├── wireless
+├── configuration
+└── terminal
+
+The initial implementation only needs the capabilities required by the current status functionality.
+
+This prevents the GUI from assuming that every router can perform every operation.
+16. Prepare for Multiple GUI Layouts
+
+The provider architecture must remain independent of presentation.
+
+The same:
+
+SystemStatus
+MemoryStatus
+
+objects should be usable by different interface layouts.
+
+Possible future themes include:
+
+    OpenWrt-style
+    DD-WRT-style
+    Netgear-style
+    Generic modern dashboard
+    Compact/mobile layout
+
+The provider supplies the data.
+
+The UI decides how that data is presented.
+17. Preserve the Initial Connection Page
+
+The current welcome page should remain the initial connection workflow for now.
+
+Its eventual role is:
+
+Unknown Router
+      │
+      ▼
+Initial Connection
+      │
+      ▼
+Provision / Identify
+      │
+      ▼
+Known Router
+      │
+      ▼
+Status Dashboard
+
+Once the router is known and its state is available, normal navigation should bypass the initial connection page.
+
+No redesign of this page is required during the provider implementation phase.
+18. Keep the Folder Structure Deliberately Small
+
+The provider architecture should not result in a large hierarchy of tiny files.
+
+The intended structure is approximately:
+
+src/router_controller/
+└── router_comms/
+    ├── firmware_status_providers/
+    │   ├── __init__.py
+    │   ├── base.py
+    │   ├── openwrt.py
+    │   ├── ddwrt.py
+    │   └── netgear.py
+    │
+    ├── router/
+    ├── ssh/
+    ├── discovery/
+    ├── provisioner.py
+    └── status_service.py
+
+Firmware-specific code belongs inside firmware_status_providers.
+
+Generic router communication remains outside that directory.
+19. Maintain the Existing Installation Model
+
+The project remains a system-installed Raspberry Pi application.
+
+The development architecture should not introduce a requirement for users to manually configure Python environments simply to operate the installed application.
+
+The package metadata, Debian packaging, systemd service, and executable entry point remain the mechanisms for deploying the application.
+
+The test environment may continue using the project's test dependencies independently.
+20. Testing Gate for This Development Phase
+
+Every implementation increment should maintain the existing test suite.
+
+The acceptance target is:
+
+pytest
+→ all existing tests pass
+→ all new provider tests pass
+→ no unrelated regressions
+
+Provider-specific tests should be added alongside each provider rather than postponing testing until the end of the phase.
+Development Order
+
+The recommended implementation sequence is:
+
+    Provider base interface
+    OpenWrt provider
+    Provider detection
+    Provider registry
+    Router/provider integration
+    Status service
+    Status page integration
+    Status/error handling
+    OpenWrt provider test suite
+    Provider detection/registry tests
+    DD-WRT provider
+    DD-WRT tests
+    Netgear provider
+    Netgear tests
+    Capability reporting
+    GUI layout abstraction preparation
+
+The immediate next task is therefore not another GUI feature. It is establishing the provider interface and implementing the OpenWrt status provider against the existing SSH connection and SystemStatus/MemoryStatus models. That gives the project a stable backend contract before additional firmware implementations are added. 
