@@ -1,3 +1,13 @@
+router-pi-controller (0.5.0) unstable; urgency=medium
+
+  * Complete:
+  * Router Management Foundation
+  * Firmware Provider Layer
+  * OpenWrt Provider v1
+  * Router Status Integration
+
+ -- OpenWrt Pi Controller Project <Need_Email@willgethere.me>  Wed, 09 Sep 2026 20:42:00 -0800
+
 router-pi-controller (0.4.4) unstable; urgency=medium
 
   * Persist router state during provisioning
