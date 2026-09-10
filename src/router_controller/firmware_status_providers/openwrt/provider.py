@@ -15,7 +15,7 @@ from .parsers import (
 )
 
 
-class WrtOpenStatusProvider(StatusProvider):
+class OpenWrtStatusProvider(StatusProvider):
 
     def __init__(self, connection):
         self.connection = connection

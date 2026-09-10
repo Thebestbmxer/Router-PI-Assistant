@@ -1,4 +1,4 @@
-from router_controller.firmware_status_providers.wrt_open.provider import (
+from router_controller.firmware_status_providers.openwrt.provider import (
     WrtOpenStatusProvider,
 )
 
