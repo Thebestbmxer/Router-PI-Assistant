@@ -9,12 +9,34 @@ from router_controller.router_comms.discovery.initial_connection import (
 logger = logging.getLogger(__name__)
 
 
-def register_routes(app, provision_router):
+def register_routes(app, provision_router, welcome_service):
     """Register the router provisioning welcome page."""
 
     @app.route("/")
     def index():
         return render_template("welcome.html")
+
+        @app.get("/api/router/status")
+        def router_status_endpoint():
+
+            logger.info("Router setup status requested")
+
+            try:
+                status = welcome_service.get_status()
+
+                return jsonify(
+                    {
+                        "router_known": status.router_known,
+                        "ssh_key_valid": status.ssh_key_valid,
+                        "ready": status.ready,
+                    }
+                )
+
+            except Exception as exc:
+                logger.exception("Failed checking router status")
+
+                return jsonify({"error": str(exc)}), 500
+
 
     @app.get("/api/router/discover")
     def discover_router_endpoint():
