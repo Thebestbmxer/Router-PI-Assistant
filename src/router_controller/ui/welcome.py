@@ -9,17 +9,27 @@ from router_controller.router_comms.discovery.initial_connection import (
 logger = logging.getLogger(__name__)
 
 
-def register_routes(app, provision_router, welcome_service):
+def register_routes(app, provision_router, welcome_service=None):
     """Register the router provisioning welcome page."""
+    @app.route("/")
+    def index():
+        state = welcome_service.get_state()
 
+        return render_template(
+            "welcome.html",
+            router_state=state,
+        )
+    '''
     @app.route("/")
     def index():
         return render_template("welcome.html")
-
+    '''
         @app.get("/api/router/status")
         def router_status_endpoint():
-
             logger.info("Router setup status requested")
+
+            if welcome_service is None:
+                return jsonify({"error": "Welcome service unavailable"}), 503
 
             try:
                 status = welcome_service.get_status()
@@ -33,10 +43,9 @@ def register_routes(app, provision_router, welcome_service):
                 )
 
             except Exception as exc:
-                logger.exception("Failed checking router status")
+                logger.exception("Unable to determine router setup status")
 
                 return jsonify({"error": str(exc)}), 500
-
 
     @app.get("/api/router/discover")
     def discover_router_endpoint():

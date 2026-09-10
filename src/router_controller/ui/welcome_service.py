@@ -16,7 +16,6 @@ class WelcomeService:
         self.router_repository = router_repository
         self.key_manager = key_manager
 
-
     def get_status(self) -> WelcomeStatus:
         state = self.router_repository.load()
 
