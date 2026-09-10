@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-
+from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class SystemStatus:
@@ -13,7 +12,6 @@ class SystemStatus:
     uptime: str | None
     load_average: tuple[float, float, float] | None
 
-
 @dataclass(frozen=True)
 class MemoryStatus:
     total: int | None
@@ -21,7 +19,6 @@ class MemoryStatus:
     used: int | None
     cached: int | None
     swap_free: int | None
-
 
 @dataclass(frozen=True)
 class StorageStatus:
@@ -32,10 +29,13 @@ class StorageStatus:
     temporary_available: int | None
     temporary_used: int | None
 
-
 @dataclass(frozen=True)
 class Status:
-    system: SystemStatus
-    memory: MemoryStatus
-    storage: StorageStatus
+    system: SystemStatus | None
+    memory: MemoryStatus | None
+    storage: StorageStatus | None
     temperature: float | None
+
+    errors: tuple[str, ...] = field(
+        default_factory=tuple
+    )

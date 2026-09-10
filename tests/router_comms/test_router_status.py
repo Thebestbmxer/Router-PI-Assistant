@@ -62,3 +62,40 @@ def test_router_returns_status():
     assert status.memory.used == 50
     assert status.storage.disk_total == 1000
     assert status.temperature == 42.0
+
+class PartialFailureStatusProvider:
+    def get_system_status(self):
+        raise RuntimeError("system unavailable")
+
+    def get_memory_status(self):
+        return MemoryStatus(
+            total=100,
+            available=75,
+            used=25,
+            cached=None,
+            swap_free=None,
+        )
+
+    def get_storage_status(self):
+        return None
+
+    def get_temperature_status(self):
+        raise RuntimeError("temperature unavailable")
+
+def test_router_returns_partial_status_on_provider_failure():
+    router = Router(
+        identity=RouterIdentity(mac_address="AA:BB:CC:DD:EE:FF"),
+        candidate=RouterCandidate(
+            address="192.168.1.1",
+            ssh_port=22,
+        ),
+    )
+
+    router.status_provider = PartialFailureStatusProvider()
+    status = router.status()
+
+    assert status.system is None
+    assert status.memory.used == 25
+    assert status.storage is None
+    assert status.temperature is None
+    assert len(status.errors) == 2

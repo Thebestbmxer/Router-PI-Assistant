@@ -1,7 +1,4 @@
-from router_controller.firmware_status_providers.provider import (
-    StatusProvider,
-)
-
+from router_controller.firmware_status_providers.provider import StatusProvider
 from router_controller.router_comms.router.status import (
     MemoryStatus,
     StorageStatus,
@@ -16,16 +13,12 @@ from .parsers import (
     parse_storage
 )
 
-
 class OpenWrtStatusProvider(StatusProvider):
     def __init__(self, connection):
         self.connection = connection
 
     def _run(self, command: str) -> str | None:
-
-        stdout, stderr, code = (
-            self.connection.execute(command)
-        )
+        stdout, stderr, code = self.connection.execute(command)
 
         if code != 0:
             return None

@@ -1,19 +1,16 @@
 """Router device representation."""
 from dataclasses import dataclass, field
 
-from router_controller.firmware_status_providers.registry import (ProviderRegistry)
-from router_controller.firmware_status_providers.provider import (StatusProvider)
-from router_controller.router_comms.discovery.firmware_detector import (
-    FirmwareIdentity,
-)
-from router_controller.router_comms.discovery.router_discovery import (
-    RouterCandidate,
-)
+from router_controller.firmware_status_providers.registry import ProviderRegistry
+from router_controller.firmware_status_providers.provider import StatusProvider
+
+from router_controller.router_comms.discovery.firmware_detector import FirmwareIdentity
+from router_controller.router_comms.discovery.router_discovery import RouterCandidate
+
 from router_controller.router_comms.router.identity import RouterIdentity
 from router_controller.router_comms.router.state import RouterState
-from router_controller.router_comms.ssh.connection_manager import (
-    RouterConnectionManager,
-)
+
+from router_controller.router_comms.ssh.connection_manager import RouterConnectionManager
 from router_controller.router_comms.ssh.keys import SSHKeyPair
 
 @dataclass
@@ -123,16 +120,45 @@ class Router:
         """
         Return complete router status.
 
-        Firmware-specific providers are hidden
-        behind the Router abstraction.
+        Individual metrics may fail without
+        preventing other status information
+        from being returned.
         """
         from router_controller.router_comms.router.status import Status
-
+        
         provider = self.firmware_status_provider
 
+        errors = []
+
+        system = None
+        memory = None
+        storage = None
+        temperature = None
+
+        try:
+            system = provider.get_system_status()
+        except Exception as exc:
+            errors.append(f"System status unavailable: {exc}")
+
+        try:
+            memory = provider.get_memory_status()
+        except Exception as exc:
+            errors.append(f"Memory status unavailable: {exc}")
+
+        try:
+            storage = provider.get_storage_status()
+        except Exception as exc:
+            errors.append(f"Storage status unavailable: {exc}")
+
+        try:
+            temperature = provider.get_temperature_status()
+        except Exception as exc:
+            errors.append(f"Temperature unavailable: {exc}")
+
         return Status(
-            system=(provider.get_system_status()),
-            memory=(provider.get_memory_status()),
-            storage=(provider.get_storage_status()),
-            temperature=(provider.get_temperature_status()),
+            system=system,
+            memory=memory,
+            storage=storage,
+            temperature=temperature,
+            errors=tuple(errors),
         )
