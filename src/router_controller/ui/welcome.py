@@ -19,7 +19,7 @@ def register_routes(app, provision_router, welcome_service=None):
             "welcome.html",
             status=status,
         )
-
+    '''
     @app.get("/api/router/status")
     def router_status_endpoint():
         logger.info("Router setup status requested")
@@ -42,7 +42,7 @@ def register_routes(app, provision_router, welcome_service=None):
             logger.exception("Unable to determine router setup status")
 
             return jsonify({"error": str(exc)}), 500
-
+        '''
     @app.get("/api/router/welcome/status")
     def welcome_status():
 
