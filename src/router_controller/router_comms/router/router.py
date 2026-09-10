@@ -8,7 +8,9 @@ from router_controller.firmware_status_providers.registry import (
 from router_controller.firmware_status_providers.provider import (
     StatusProvider,
 )
-
+from router_controller.router_comms.discovery.firmware_detector import (
+    FirmwareIdentity,
+)
 from router_controller.router_comms.discovery.router_discovery import (
     RouterCandidate,
 )
@@ -33,6 +35,11 @@ class Router:
     target: str | None = None
 
     state: RouterState | None = None
+
+    firmware_identity: FirmwareIdentity | None = field(
+        default=None,
+    )
+
     connection_manager: RouterConnectionManager | None = field(
         default=None,
         repr=False,
@@ -95,7 +102,8 @@ class Router:
         """
         Return the firmware-specific status provider.
 
-        The provider is created only after a connection exists.
+        Provider creation is delayed until an authenticated
+        SSH connection exists.
         """
 
         if self.status_provider is not None:
@@ -103,20 +111,27 @@ class Router:
 
         if self.connection_manager is None:
             raise RuntimeError(
-                "Cannot create status provider without "
-                "a router connection."
+                "Router connection manager is unavailable."
             )
 
-        if not self.connection_manager.connected:
+        connection = self.connection_manager.connection
+
+        if connection is None:
             raise RuntimeError(
                 "Router is not connected."
             )
 
-        registry = ProviderRegistry()
+        if self.firmware_identity is None:
+            raise RuntimeError(
+                "Router firmware has not been detected."
+            )
 
-        self.status_provider = registry.get_provider(
-            self.connection_manager.connection,
-            self,
+        self.status_provider = (
+            ProviderRegistry()
+            .get_provider(
+                self.firmware_identity,
+                connection,
+            )
         )
 
         return self.status_provider
