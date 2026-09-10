@@ -1,5 +1,5 @@
 from router_controller.firmware_status_providers.openwrt.provider import (
-    WrtOpenStatusProvider,
+    OpenWrtStatusProvider,
 )
 
 
@@ -43,7 +43,7 @@ class FakeConnection:
 
 def test_openwrt_system_status():
 
-    provider = WrtOpenStatusProvider(
+    provider = OpenWrtStatusProvider(
         FakeConnection()
     )
 
@@ -62,7 +62,7 @@ def test_openwrt_system_status():
 
 def test_openwrt_memory_status():
 
-    provider = WrtOpenStatusProvider(
+    provider = OpenWrtStatusProvider(
         FakeConnection()
     )
 
