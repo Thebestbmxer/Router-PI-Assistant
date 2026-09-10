@@ -4,7 +4,8 @@ from router_controller.firmware_status_providers.provider import (
 
 from router_controller.router_comms.router.status import (
     MemoryStatus,
-    SystemStatus,
+    StorageStatus,
+    SystemStatus
 )
 
 from . import commands
@@ -12,6 +13,7 @@ from .parsers import (
     parse_load_average,
     parse_meminfo,
     parse_release,
+    parse_storage
 )
 
 
@@ -134,8 +136,21 @@ class OpenWrtStatusProvider(StatusProvider):
 
 
     def get_storage_status(self):
-        return None
+        storage = parse_storage(
+            self._run(
+                commands.STORAGE
+            )
+            or ""
+        )
 
+        if not storage:
+            return None
+
+        return StorageStatus(
+            total=storage.get("total"),
+            used=storage.get( "used"),
+            available=storage.get("available"),
+        )
 
     def get_temperature_status(self):
         value = self._run(

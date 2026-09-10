@@ -59,3 +59,37 @@ def parse_meminfo(
             continue
 
     return result
+
+def parse_storage(
+    output: str,
+) -> dict[str, int]:
+
+    result = {}
+
+    lines = output.splitlines()
+
+    if len(lines) < 2:
+        return result
+
+
+    for line in lines[1:]:
+
+        parts = line.split()
+
+        if len(parts) < 6:
+            continue
+
+        try:
+            result = {
+                "total": int(parts[1]) * 1024,
+                "used": int(parts[2]) * 1024,
+                "available": int(parts[3]) * 1024,
+            }
+
+            break
+
+        except ValueError:
+            continue
+
+
+    return result
