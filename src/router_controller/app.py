@@ -5,10 +5,10 @@ from flask import Flask
 from .config import Config
 from .database import initialize_database
 from .logging_config import configure_logging
-#from .router_comms.factory import create_router_provisioner
 from .router_comms.factory import create_router_services
 from .ui import register_routes, register_ui_context
 from .ui.welcome_service import WelcomeService
+
 
 def create_app(config_class=Config, provision_router=None):
     """Create and configure the Flask application."""
@@ -27,29 +27,22 @@ def create_app(config_class=Config, provision_router=None):
 
     initialize_database(config_class)
 
-    services = None
+    services = create_router_services(config_class)
 
-    if config_class is Config:
-        services = create_router_services(config_class)
+    if provision_router is None:
+        provision_router = services.provisioner.provision
 
-        if provision_router is None:
-            provision_router = (services.provisioner.provision)
+    welcome_service = WelcomeService(
+        router_repository=services.router_repository,
+        key_manager=services.key_manager,
+    )
 
-    if services is not None:
-        welcome_service = WelcomeService(
-            router_repository=services.router_repository,
-            key_manager=services.key_manager,
-        )
-    else:
-        welcome_service = None
+    register_routes(
+        app,
+        provision_router,
+        welcome_service,
+    )
 
-    '''
-    if provision_router is None and config_class is Config:
-        provisioner = create_router_provisioner(config_class)
-        provision_router = provisioner.provision
-        '''
-
-    register_routes(app, provision_router, welcome_service)
     register_ui_context(app)
 
     return app
