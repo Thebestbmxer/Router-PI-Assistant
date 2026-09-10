@@ -23,7 +23,7 @@ def create_router_services(
 ) -> RouterServices:
 
     key_manager = SSHKeyManager(config_class.get_ssh_key_directory())
-    router_repository = RouterStateRepository(config_class.get_database_path())
+    router_repository = RouterStateRepository(config_class.get_router_state_path())
 
     provisioner = RouterProvisioner(
         key_manager=key_manager,
@@ -59,38 +59,4 @@ def create_router_provisioner(
     config_class: type[Config] = Config,
 ) -> RouterProvisioner:
 
-    return create_router_services(
-        config_class
-    ).provisioner
-'''
-    key_manager = SSHKeyManager(
-        config_class.get_ssh_key_directory()
-    )
-
-    discovery = RouterDiscovery(
-        ssh_port=config_class.ROUTER_SSH_PORT,
-        timeout=config_class.ROUTER_SSH_TIMEOUT,
-    )
-
-    router_repository = RouterStateRepository(
-        config_class.get_database_path()
-    )
-
-    return RouterProvisioner(
-        key_manager=key_manager,
-        discovery=discovery,
-        bootstrap_factory=lambda candidate: RouterBootstrap(
-            candidate=candidate,
-            username=config_class.ROUTER_SSH_USER,
-            timeout=config_class.ROUTER_SSH_TIMEOUT,
-        ),
-        installer_factory=lambda client: RouterKeyInstaller(client),
-        connection_factory=lambda candidate, key_pair, config:
-            RouterConnection(
-                candidate=candidate,
-                key_pair=key_pair,
-                config=config,
-            ),
-            router_repository=router_repository,
-    )
-'''
+    return create_router_services(config_class).provisioner

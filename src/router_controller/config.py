@@ -63,3 +63,7 @@ class Config:
     ROUTER_SSH_TIMEOUT = int(
         os.getenv("ROUTER_CONTROLLER_SSH_TIMEOUT", "10")
     )
+
+    @classmethod
+    def get_router_state_path(cls) -> Path:
+        return cls.DATA_DIR / "router_state.json"

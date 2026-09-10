@@ -35,9 +35,13 @@ class RouterStateRepository:
         if not self.path.exists():
             return None
 
-        data = json.loads(
-            self.path.read_text(encoding="utf-8")
-        )
+        try:
+            data = json.loads(
+                self.path.read_text(encoding="utf-8")
+            )
+
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return None
 
         return RouterState(**data)
 
