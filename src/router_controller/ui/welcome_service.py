@@ -17,6 +17,8 @@ class WelcomeService:
         self.key_manager = key_manager
 
     def get_status(self) -> WelcomeStatus:
+        return self.get_status()
+    '''
         state = self.router_repository.load()
 
         if state is None:
@@ -41,3 +43,4 @@ class WelcomeService:
             ssh_key_valid=True,
             ready=True,
         )
+    '''
