@@ -1,4 +1,4 @@
-"""Persistent SSH connections to OpenWrt routers."""
+"""Persistent SSH connections to routers."""
 
 import paramiko
 import hashlib

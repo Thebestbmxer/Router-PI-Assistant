@@ -13,6 +13,9 @@ from router_controller.router_comms.discovery.router_discovery import (
     RouterCandidate,
     RouterDiscovery,
 )
+from router_controller.router_comms.discovery.firmware_detector import (
+    FirmwareDetector,
+)
 from router_controller.router_comms.ssh.connection import (
     RouterConnection,
     RouterConnectionConfig,
@@ -35,7 +38,7 @@ from router_controller.router_comms.router.state import RouterState
 
 
 class RouterProvisioner:
-    """Provision an OpenWrt router for controller SSH access.
+    """Provision a router for controller SSH access.
 
     The provisioner coordinates discovery, bootstrap authentication,
     key installation, persistent router state, and establishment of
@@ -124,6 +127,11 @@ class RouterProvisioner:
                 "Router SSH connection was not established."
             )
 
+        firmware_identity = FirmwareDetector(
+            connection
+        ).detect()
+
+
         fingerprint = connection.host_key_fingerprint
 
         if fingerprint is None:
@@ -136,6 +144,7 @@ class RouterProvisioner:
             host_key_fingerprint=fingerprint,
             state=state,
             connection_manager=manager,
+            firmware_identity=firmware_identity,
         )
 
     def _load_or_generate_key_pair(self) -> SSHKeyPair:

@@ -82,6 +82,7 @@ class Router:
         host_key_fingerprint: str,
         state: RouterState | None = None,
         connection_manager: RouterConnectionManager | None = None,
+        firmware_identity: FirmwareIdentity | None = None,
     ) -> "Router":
         """Create a router from a verified SSH connection."""
 
@@ -95,6 +96,7 @@ class Router:
             candidate=candidate,
             state=state,
             connection_manager=connection_manager,
+            firmware_identity=firmware_identity,
         )
 
     @property
