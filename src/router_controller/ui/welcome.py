@@ -1,7 +1,11 @@
 import logging
 
-from flask import jsonify, render_template
-
+from flask import (
+    jsonify,
+    redirect,
+    render_template,
+    url_for,
+)
 from router_controller.router_comms.discovery.initial_connection import discover_and_connect_router
 
 logger = logging.getLogger(__name__)
@@ -12,6 +16,9 @@ def register_routes(app, provision_router, welcome_service=None):
     @app.route("/")
     def index():
         status = welcome_service.get_status()
+        
+        if status.ssh_key_present:
+            return redirect(url_for("status"))
 
         return render_template(
             "welcome.html",
