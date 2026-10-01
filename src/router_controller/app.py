@@ -43,6 +43,13 @@ def create_app(config_class=Config, provision_router=None):
             key_manager=services.key_manager,
         )
 
+        router = services.existing_connection.connect()
+
+        if router is not None:
+            app.extensions["router"] = router
+        else:
+            app.extensions.pop("router", None)
+
     original_provision_router = provision_router
 
     def provision_and_store_router():

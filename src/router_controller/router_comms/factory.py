@@ -6,15 +6,17 @@ from dataclasses import dataclass
 from router_controller.config import Config
 from router_controller.router_comms.discovery.bootstrap        import RouterBootstrap
 from router_controller.router_comms.discovery.router_discovery import RouterDiscovery
-from router_controller.router_comms.provisioner import RouterProvisioner
-from router_controller.router_comms.ssh.key_installer import RouterKeyInstaller
-from router_controller.router_comms.ssh.keys          import SSHKeyManager
-from router_controller.router_comms.ssh.connection    import RouterConnection
-from router_controller.router_comms.router.repository import RouterStateRepository
+from router_controller.router_comms.provisioner         import RouterProvisioner
+from router_controller.router_comms.ssh.key_installer   import RouterKeyInstaller
+from router_controller.router_comms.ssh.keys            import SSHKeyManager
+from router_controller.router_comms.ssh.connection      import RouterConnection
+from router_controller.router_comms.router.repository   import RouterStateRepository
+from router_controller.router_comms.existing_connection import ExistingRouterConnection
 
 @dataclass
 class RouterServices:
     provisioner: RouterProvisioner
+    existing_connection: ExistingRouterConnection
     key_manager: SSHKeyManager
     router_repository: RouterStateRepository
 
@@ -46,11 +48,35 @@ def create_router_services(
                 config=config,
             ),
 
-        router_repository=router_repository,
+        #router_repository=router_repository,
+        provisioner = RouterProvisioner(
+            key_manager=key_manager,
+            discovery=RouterDiscovery(
+                ssh_port=config_class.ROUTER_SSH_PORT,
+                timeout=config_class.ROUTER_SSH_TIMEOUT,
+            ),
+            bootstrap_factory=lambda candidate: RouterBootstrap(
+                candidate=candidate,
+                username=config_class.ROUTER_SSH_USER,
+                timeout=config_class.ROUTER_SSH_TIMEOUT,
+            ),
+            installer_factory=lambda client:
+                RouterKeyInstaller(client),
+
+            connection_factory=connection_factory,
+            router_repository=router_repository,
+        )
+
+        existing_connection = ExistingRouterConnection(
+            key_manager=key_manager,
+            router_repository=router_repository,
+            connection_factory=connection_factory,
+        )
     )
 
     return RouterServices(
         provisioner=provisioner,
+        existing_connection=existing_connection,
         key_manager=key_manager,
         router_repository=router_repository,
     )
