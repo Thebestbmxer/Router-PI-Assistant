@@ -56,7 +56,7 @@ def status():
     ]
 
     return render_template(
-        "layouts/default/status.html",
+        "status.html",
         tabs=tabs,
         active_tab="status",
     )
