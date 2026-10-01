@@ -27,6 +27,12 @@ def create_router_services(
     key_manager = SSHKeyManager(config_class.get_ssh_key_directory())
     router_repository = RouterStateRepository(config_class.get_router_state_path())
 
+    connection_factory = lambda candidate, key_pair, config: RouterConnection(
+        candidate=candidate,
+        key_pair=key_pair,
+        config=config,
+    )
+
     provisioner = RouterProvisioner(
         key_manager=key_manager,
         discovery=RouterDiscovery(
@@ -40,38 +46,14 @@ def create_router_services(
         ),
         installer_factory=lambda client:
             RouterKeyInstaller(client),
+        connection_factory=connection_factory,
+        router_repository=router_repository,
+    )
 
-        connection_factory=lambda candidate, key_pair, config:
-            RouterConnection(
-                candidate=candidate,
-                key_pair=key_pair,
-                config=config,
-            ),
-
-        #router_repository=router_repository,
-        provisioner = RouterProvisioner(
-            key_manager=key_manager,
-            discovery=RouterDiscovery(
-                ssh_port=config_class.ROUTER_SSH_PORT,
-                timeout=config_class.ROUTER_SSH_TIMEOUT,
-            ),
-            bootstrap_factory=lambda candidate: RouterBootstrap(
-                candidate=candidate,
-                username=config_class.ROUTER_SSH_USER,
-                timeout=config_class.ROUTER_SSH_TIMEOUT,
-            ),
-            installer_factory=lambda client:
-                RouterKeyInstaller(client),
-
-            connection_factory=connection_factory,
-            router_repository=router_repository,
-        ),
-
-        existing_connection = ExistingRouterConnection(
-            key_manager=key_manager,
-            router_repository=router_repository,
-            connection_factory=connection_factory,
-        )
+    existing_connection = ExistingRouterConnection(
+        key_manager=key_manager,
+        router_repository=router_repository,
+        connection_factory=connection_factory,
     )
 
     return RouterServices(
