@@ -1,51 +1,3 @@
-const THEME_STORAGE_KEY = "router-pi-theme";
-
-
-function applyTheme(theme) {
-    const app = document.getElementById("app");
-    const selector = document.getElementById("theme-select");
-
-    if (!app) return;
-
-    if (theme !== "default" && theme !== "open") {
-        theme = "default";
-    }
-
-    if (theme === "default") {
-        app.removeAttribute("data-theme");
-    } else {
-        app.dataset.theme = theme;
-    }
-
-    if (selector) {
-        selector.value = theme;
-    }
-}
-
-
-function initializeTheme() {
-    const selector = document.getElementById("theme-select");
-
-    const savedTheme =
-        localStorage.getItem(THEME_STORAGE_KEY) || "default";
-
-    applyTheme(savedTheme);
-
-    if (!selector) return;
-
-    selector.addEventListener("change", () => {
-        const theme = selector.value;
-
-        localStorage.setItem(
-            THEME_STORAGE_KEY,
-            theme
-        );
-
-        applyTheme(theme);
-    });
-}
-
-
 async function updateStatus() {
     try {
         const response = await fetch(
@@ -56,7 +8,6 @@ async function updateStatus() {
         );
 
         const data = await response.json();
-
         updateConnectionState(data);
 
     } catch (error) {
@@ -68,39 +19,23 @@ async function updateStatus() {
 
     }
 }
-
-
 function updateConnectionState(data) {
-
-    const indicator =
-        document.getElementById("connection-indicator");
-
-    const connectionText =
-        document.getElementById("connection-text");
-
-    const icon =
-        document.getElementById("ssh-status-icon");
-
-    const status =
-        document.getElementById("ssh-status");
-
-    const message =
-        document.getElementById("ssh-message");
-
+    const indicator = document.getElementById("connection-indicator");
+    const connectionText = document.getElementById("connection-text");
+    const icon = document.getElementById("ssh-status-icon");
+    const status = document.getElementById("ssh-status");
+    const message = document.getElementById("ssh-message");
 
     if (data.connected) {
-
         indicator.classList.add("connected");
         indicator.classList.remove("disconnected");
 
         connectionText.textContent = "ONLINE";
 
-
         icon.classList.add("connected");
         icon.classList.remove("disconnected");
 
         icon.textContent = "✓";
-
 
         status.textContent = "Connected";
 
@@ -108,26 +43,21 @@ function updateConnectionState(data) {
             "The Raspberry Pi is authenticated to the router using SSH.";
 
     } else {
-
         indicator.classList.remove("connected");
         indicator.classList.add("disconnected");
 
         connectionText.textContent = "OFFLINE";
-
 
         icon.classList.remove("connected");
         icon.classList.add("disconnected");
 
         icon.textContent = "×";
 
-
         status.textContent = "Disconnected";
 
         message.textContent =
-            data.message ||
-            "The router SSH connection is unavailable.";
+            data.message || "The router SSH connection is unavailable.";
     }
-
 
     setText(
         "router-address",
@@ -150,11 +80,8 @@ function updateConnectionState(data) {
     );
 }
 
-
 function setText(id, value) {
-
-    const element =
-        document.getElementById(id);
+    const element = document.getElementById(id);
 
     if (!element) return;
 
@@ -165,9 +92,6 @@ function setText(id, value) {
             ? "—"
             : value;
 }
-
-
-initializeTheme();
 
 updateStatus();
 

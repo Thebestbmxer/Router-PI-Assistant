@@ -1,6 +1,7 @@
 :root {
     --background: #f4f6f8;
     --surface: #ffffff;
+    --surface-alt: #f8fafc;
     --border: #dfe3e8;
     --text: #20242a;
     --muted: #6b7280;
@@ -9,25 +10,48 @@
     --success: #16a34a;
     --danger: #dc2626;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --radius: 8px;
+    --topbar-height: 64px;
+    --content-width: 1100px;
 }
+
+
+/* =========================================================
+   Base
+   ========================================================= */
 
 * {
     box-sizing: border-box;
 }
 
+html,
 body {
     margin: 0;
+    min-height: 100%;
+}
+
+body {
     background: var(--background);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+select {
+    font: inherit;
 }
 
 .app {
     min-height: 100vh;
 }
 
+
+/* =========================================================
+   Top bar
+   ========================================================= */
+
 .topbar {
-    height: 64px;
+    height: var(--topbar-height);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -64,6 +88,48 @@ body {
     opacity: 0.75;
 }
 
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+
+/* =========================================================
+   Theme selector
+   ========================================================= */
+
+.theme-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+    .theme-selector label {
+        opacity: 0.8;
+    }
+
+    .theme-selector select {
+        min-width: 100px;
+        padding: 5px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.15);
+        color: white;
+        cursor: pointer;
+    }
+
+    .theme-selector option {
+        background: white;
+        color: #20242a;
+    }
+
+
+/* =========================================================
+   Connection indicator
+   ========================================================= */
+
 .connection {
     display: flex;
     align-items: center;
@@ -82,8 +148,13 @@ body {
     background: #4ade80;
 }
 
+
+/* =========================================================
+   Main content
+   ========================================================= */
+
 .content {
-    max-width: 1100px;
+    max-width: var(--content-width);
     margin: 0 auto;
     padding: 32px 24px;
 }
@@ -102,6 +173,11 @@ body {
         color: var(--muted);
     }
 
+
+/* =========================================================
+   Cards
+   ========================================================= */
+
 .status-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -109,11 +185,11 @@ body {
 }
 
 .card {
+    overflow: hidden;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius);
     box-shadow: var(--shadow);
-    overflow: hidden;
 }
 
 .card-header {
@@ -125,6 +201,11 @@ body {
         margin: 0;
         font-size: 16px;
     }
+
+
+/* =========================================================
+   SSH state
+   ========================================================= */
 
 .connection-state {
     display: flex;
@@ -163,6 +244,10 @@ body {
 }
 
 
+/* =========================================================
+   Router information
+   ========================================================= */
+
 .info-list {
     padding: 8px 20px 16px;
 }
@@ -188,9 +273,144 @@ body {
         font-weight: 500;
     }
 
+
+/* =========================================================
+   OPEN THEME
+   =========================================================
+   OpenWrt-inspired:
+   - dark navigation/header
+   - orange accent
+   - flatter panels
+   - tighter spacing
+   - squared corners
+   - more administrative/network-device appearance
+   ========================================================= */
+
+.app[data-theme="open"] {
+    --background: #f1f1f1;
+    --surface: #ffffff;
+    --surface-alt: #f7f7f7;
+    --border: #cccccc;
+    --text: #333333;
+    --muted: #777777;
+    --primary: #f58220;
+    --primary-dark: #333333;
+    --success: #3c9a3c;
+    --danger: #c0392b;
+    --shadow: none;
+    --radius: 2px;
+    --topbar-height: 58px;
+    --content-width: 1200px;
+}
+
+    .app[data-theme="open"] .topbar {
+        background: #333333;
+        border-bottom: 4px solid #f58220;
+    }
+
+    .app[data-theme="open"] .brand-mark {
+        border-radius: 2px;
+        background: #f58220;
+        color: white;
+    }
+
+    .app[data-theme="open"] .brand-name {
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .app[data-theme="open"] .brand-subtitle {
+        color: #cccccc;
+    }
+
+    .app[data-theme="open"] .content {
+        padding: 24px 20px;
+    }
+
+    .app[data-theme="open"] .page-heading {
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        background: #ffffff;
+        border: 1px solid var(--border);
+    }
+
+        .app[data-theme="open"] .page-heading h1 {
+            font-size: 22px;
+            font-weight: 500;
+        }
+
+    .app[data-theme="open"] .status-grid {
+        gap: 16px;
+    }
+
+    .app[data-theme="open"] .card {
+        border-radius: 2px;
+    }
+
+    .app[data-theme="open"] .card-header {
+        padding: 12px 16px;
+        background: #f3f3f3;
+    }
+
+        .app[data-theme="open"] .card-header h2 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+    .app[data-theme="open"] .connection-state {
+        padding: 20px 16px;
+    }
+
+    .app[data-theme="open"] .status-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 2px;
+        font-size: 20px;
+    }
+
+    .app[data-theme="open"] .status-title {
+        font-size: 16px;
+    }
+
+    .app[data-theme="open"] .info-list {
+        padding: 4px 16px 10px;
+    }
+
+    .app[data-theme="open"] .info-row {
+        padding: 11px 0;
+    }
+
+    .app[data-theme="open"] .theme-selector select {
+        border-radius: 2px;
+        background: #444444;
+    }
+
+    .app[data-theme="open"] .connection-dot {
+        width: 8px;
+        height: 8px;
+    }
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
 @media (max-width: 700px) {
+
     .topbar {
-        padding: 0 16px;
+        height: auto;
+        min-height: var(--topbar-height);
+        padding: 10px 16px;
+        gap: 12px;
+    }
+
+    .topbar-right {
+        gap: 12px;
+    }
+
+    .theme-selector label {
+        display: none;
     }
 
     .content {
@@ -199,5 +419,18 @@ body {
 
     .status-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .brand-subtitle {
+        display: none;
+    }
+
+    .topbar-right {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
     }
 }
