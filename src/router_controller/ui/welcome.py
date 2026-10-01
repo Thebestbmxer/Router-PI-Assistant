@@ -96,6 +96,7 @@ def register_routes(app, provision_router, welcome_service=None):
 
         try:
             router = provision_router()
+            app.extensions["router"] = router
 
             return jsonify(
                 {

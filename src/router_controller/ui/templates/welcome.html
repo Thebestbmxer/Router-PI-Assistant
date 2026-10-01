@@ -16,19 +16,13 @@ Router Pi Controller Setup
         </p>
     </header>
 
-
     <section class="card">
-
         <h2>Router Setup</h2>
-
 
         <div id="message"
              class="message">
-
             {{ status.message }}
-
         </div>
-
 
         <div class="details">
 
@@ -104,10 +98,7 @@ async function discover()
         const data = await response.json();
 
 
-        if (!data.found)
-        {
-            throw new Error(data.error);
-        }
+        if (!data.found) {throw new Error(data.error);}
 
         address.textContent = data.address;
         port.textContent = data.ssh_port;
@@ -130,12 +121,9 @@ async function discover()
 
     finally
     {
-        discoverButton.disabled =
-            false;
+        discoverButton.disabled = false;
     }
 }
-
-
 
 async function provision()
 {
@@ -175,7 +163,9 @@ async function provision()
 }
 
 discoverButton.onclick = discover;
-provisionButton.onclick = provision;</script>
+provisionButton.onclick = provision;
+continueButton.onclick = () => {window.location.href = "/status";};
+</script>
 
 <style>
     .welcome {
