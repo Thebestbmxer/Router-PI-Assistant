@@ -32,7 +32,7 @@ def register_status_ui(app: Flask) -> None:
     register_status_routes(app)
 
 def register_layout_manager(app: Flask) -> None:
-    """Register the layout manager."""
+    """Register the layout manager and active layout templates."""
 
     layouts_path = (
         Path(app.root_path)
@@ -49,7 +49,9 @@ def register_layout_manager(app: Flask) -> None:
     active_layout = manager.active()
 
     if active_layout is None:
-        return
+        raise RuntimeError(
+            "No active layout is available."
+        )
 
     template_path = (
         active_layout.path
@@ -64,6 +66,7 @@ def register_layout_manager(app: Flask) -> None:
             app.jinja_loader,
         ]
     )
+
 
 '''
 def register_layout_manager(app: Flask) -> None:
