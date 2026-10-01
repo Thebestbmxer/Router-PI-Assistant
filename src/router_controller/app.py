@@ -9,7 +9,9 @@ from .router_comms.factory import create_router_services
 from .ui import (
     register_routes,
     register_status_ui,
-    register_ui_context
+    register_ui_context,
+    register_layout_manager,
+    register_layout_ui,
 )
 from .ui.welcome_service import WelcomeService
 
@@ -68,4 +70,7 @@ def create_app(config_class=Config, provision_router=None):
     
     register_status_ui(app)
     register_ui_context(app)
+    register_layout_manager(app)
+    register_layout_ui(app)
+
     return app

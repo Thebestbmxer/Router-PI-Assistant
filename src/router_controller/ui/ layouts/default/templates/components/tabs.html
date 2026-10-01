@@ -1,0 +1,21 @@
+<nav class="layout-tabs">
+
+    {% for tab in tabs %}
+
+    {% if tab.enabled %}
+
+    <a href="{{ tab.route }}"
+       class="
+                    layout-tab
+                    {% if active_tab == tab.id %}
+                        active
+                    {% endif %}
+                ">
+        {{ tab.label }}
+    </a>
+
+    {% endif %}
+
+    {% endfor %}
+
+</nav>

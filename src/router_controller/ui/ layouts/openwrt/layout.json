@@ -1,0 +1,18 @@
+{
+  "id": "openwrt",
+  "name": "OpenWrt",
+  "version": "0.1.0",
+  "description": "OpenWrt-inspired router administration interface.",
+  "author": "Router Pi Assistant",
+
+  "layout": {
+    "type": "tabs",
+    "position": "top",
+    "density": "compact"
+  },
+
+  "theme": {
+    "mode": "light",
+    "accent": "orange"
+  }
+}

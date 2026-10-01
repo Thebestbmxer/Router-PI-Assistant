@@ -1,0 +1,34 @@
+{
+  "tabs": [
+    {
+      "id": "dashboard",
+      "label": "Status",
+      "route": "/dashboard",
+      "enabled": true
+    },
+    {
+      "id": "network",
+      "label": "Network",
+      "route": "/network",
+      "enabled": true
+    },
+    {
+      "id": "wireless",
+      "label": "Wireless",
+      "route": "/wireless",
+      "enabled": true
+    },
+    {
+      "id": "clients",
+      "label": "Associated Stations",
+      "route": "/clients",
+      "enabled": true
+    },
+    {
+      "id": "gui-config",
+      "label": "GUI Config",
+      "route": "/gui-config",
+      "enabled": true
+    }
+  ]
+}

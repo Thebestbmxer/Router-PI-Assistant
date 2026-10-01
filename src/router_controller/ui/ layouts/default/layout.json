@@ -1,0 +1,17 @@
+{
+  "id": "default",
+  "name": "Default",
+  "version": "0.1.0",
+  "description": "Router Pi Assistant hacker-style interface.",
+
+  "layout": {
+    "type": "tabs",
+    "position": "top",
+    "density": "comfortable"
+  },
+
+  "theme": {
+    "mode": "dark",
+    "accent": "green"
+  }
+}

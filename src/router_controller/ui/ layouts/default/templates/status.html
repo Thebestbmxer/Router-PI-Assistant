@@ -1,0 +1,89 @@
+{% extends "layouts/default/base.html" %}
+
+{% block content %}
+
+<section class="status-page">
+    <div class="page-heading">
+
+        <div class="command">
+            $ router-pi status
+        </div>
+
+        <h1> SYSTEM STATUS </h1>
+
+        <p> Router Pi Assistant control interface </p>
+
+    </div>
+
+    <div class="status-grid">
+        <section class="status-card">
+
+            <div class="card-header">
+                CONNECTION
+            </div>
+
+            <div class="status-row">
+
+                <span>
+                    SSH
+                </span>
+
+                <strong>
+                    ONLINE
+                </strong>
+
+            </div>
+
+            <div class="status-row">
+
+                <span>
+                    ROUTER
+                </span>
+
+                <strong>
+                    CONNECTED
+                </strong>
+
+            </div>
+
+        </section>
+
+
+        <section class="status-card">
+
+            <div class="card-header">
+                SYSTEM
+            </div>
+
+            <div class="status-row">
+
+                <span>
+                    HOSTNAME
+                </span>
+
+                <strong>
+                    --
+                </strong>
+            </div>
+
+            <div class="status-row">
+
+                <span>
+                    FIRMWARE
+                </span>
+
+                <strong>
+                    OpenWrt
+                </strong>
+            </div>
+        </section>
+    </div>
+
+    <div class="terminal-line">
+        <span>
+            $ _
+        </span>
+    </div>
+</section>
+
+{% endblock %}
