@@ -3,4 +3,5 @@ cd ~/Router-PI-Assistant
 
 git pull https://github.com/TheBestBMXer/Router-PI-Assistant.git
 dpkg-buildpackage -us -uc -b
-sudo apt install ../router-pi-controller_[whatever it says]_all.deb
+sudo dbkg -i ../router-pi-controller_[whatever it says]_all.deb
+sudo systemctl restart router-controller
