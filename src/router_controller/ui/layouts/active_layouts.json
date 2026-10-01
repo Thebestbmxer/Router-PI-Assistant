@@ -1,7 +1,6 @@
 {
   "active_layout": "default",
   "enabled": [
-    "default"//,
-    //"openwrt"
+    "default"
   ]
 }
