@@ -65,7 +65,7 @@ def create_router_services(
 
             connection_factory=connection_factory,
             router_repository=router_repository,
-        )
+        ),
 
         existing_connection = ExistingRouterConnection(
             key_manager=key_manager,

@@ -68,5 +68,4 @@ def create_app(config_class=Config, provision_router=None):
     
     register_status_ui(app)
     register_ui_context(app)
-
     return app
