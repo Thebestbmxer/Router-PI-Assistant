@@ -12,6 +12,7 @@ from .status import register_status_routes
 from .layout.status import layout_status_bp
 from .layout.manager import LayoutManager
 
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 def register_ui_context(app: Flask) -> None:
     """Register values available to all UI templates."""
@@ -30,7 +31,41 @@ def register_status_ui(app: Flask) -> None:
 
     register_status_routes(app)
 
+def register_layout_manager(app: Flask) -> None:
+    """Register the layout manager."""
 
+    layouts_path = (
+        Path(app.root_path)
+        / "ui"
+        / "layouts"
+    )
+
+    manager = LayoutManager(
+        layouts_path
+    )
+
+    app.extensions["layout_manager"] = manager
+
+    active_layout = manager.active()
+
+    if active_layout is None:
+        return
+
+    template_path = (
+        active_layout.path
+        / "templates"
+    )
+
+    app.jinja_loader = ChoiceLoader(
+        [
+            FileSystemLoader(
+                str(template_path)
+            ),
+            app.jinja_loader,
+        ]
+    )
+
+'''
 def register_layout_manager(app: Flask) -> None:
     """Register the layout manager."""
 
@@ -43,7 +78,7 @@ def register_layout_manager(app: Flask) -> None:
     app.extensions["layout_manager"] = LayoutManager(
         layouts_path
     )
-
+'''
 
 def register_layout_ui(app: Flask) -> None:
     """Register the new layout-based UI."""
