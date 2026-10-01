@@ -1,0 +1,528 @@
+    ✅ Existing router communication/provisioning architecture is complete
+    ✅ Firmware identification has been added to Router
+    🟡 Firmware provider registry work is partially complete
+    🟡 GUI work has not started
+    🔴 Several provider/status abstractions are still missing
+
+Firmware Status Provider Development Roadmap — Updated Status
+
+Repository: https://github.com/Thebestbmxer/Router-PI-Assistant
+Current Project Status Summary
+
+The project has completed the foundational router management layer:
+
+✅ Router discovery
+✅ Bootstrap SSH access
+✅ SSH key provisioning
+✅ Permanent SSH connection management
+✅ Router state persistence
+✅ Firmware identification
+✅ Router object integration with firmware identity
+
+The project is now ready to complete the firmware abstraction layer and begin exposing router information through the GUI.
+Completed Work
+✅ 1. Establish the Provider Architecture
+
+Status: Partially Complete
+
+The repository already has the provider package structure:
+
+src/router_controller/
+└── firmware_status_providers/
+    ├── exceptions.py
+    ├── provider.py
+    ├── registry.py
+    ├── openwrt/
+    │   ├── commands.py
+    │   ├── parsers.py
+    │   └── provider.py
+    └── wrt_open/
+
+Completed
+
+    Firmware-specific logic has been separated from general router communication.
+    OpenWrt has its own provider implementation area.
+    Provider registry location exists.
+    Existing router communication does not directly depend on OpenWrt commands.
+
+Remaining
+
+    Finalize provider contract.
+    Ensure every provider returns common application models.
+    Complete registry selection behavior.
+
+✅ 2. Define Firmware Identity Detection
+
+Status: Complete
+
+Implemented:
+
+router_comms/discovery/
+└── firmware_detector.py
+
+Current functionality:
+
+    Connects through existing SSH connection.
+    Reads:
+
+/etc/openwrt_release
+
+    Produces:
+
+FirmwareIdentity(
+    name="openwrt",
+    version=...,
+    target=...
+)
+
+The detection result is now attached to the router provisioning flow.
+
+Example:
+
+Router
+ ├── Candidate
+ ├── State
+ ├── ConnectionManager
+ └── FirmwareIdentity
+
+✅ 3. Connect Firmware Identity to Router Object
+
+Status: Complete
+
+The Router object now knows the firmware identity.
+
+The architecture is now:
+
+Router
+ ├── Identity
+ ├── Candidate
+ ├── State
+ ├── ConnectionManager
+ └── FirmwareIdentity
+
+This is the correct foundation for provider selection.
+🟡 4. Define the Provider Interface
+
+Status: Started — Needs Completion
+
+Current:
+
+firmware_status_providers/provider.py
+
+exists.
+Remaining tasks
+
+Create the finalized contract.
+
+The provider interface should expose:
+
+get_system_status()
+get_memory_status()
+get_storage_status()
+get_temperature_status()
+
+The provider must:
+
+    Accept an existing authenticated SSH connection.
+    Never create its own SSH session.
+    Return common models.
+    Hide firmware-specific command parsing.
+
+Target architecture:
+
+SSH Connection
+       |
+       v
+Firmware Provider
+       |
+       v
+Common Status Models
+       |
+       v
+Web Application
+
+🔴 5. Create Common Status Models
+
+Status: Missing
+
+Required models still need to be finalized.
+
+Recommended location:
+
+router_comms/router/
+
+or:
+
+router_comms/status/
+
+Required:
+SystemStatus
+
+hostname
+model
+architecture
+target_platform
+firmware_version
+kernel_version
+local_time
+uptime
+load_average
+
+MemoryStatus
+
+total
+available
+used
+cached
+swap_free
+disk_space
+temp_space
+
+These become the contract between:
+
+Provider
+   |
+   v
+Status Service
+   |
+   v
+GUI
+
+🟡 6. Implement OpenWrt Provider
+
+Status: Partially Complete
+
+Existing:
+
+firmware_status_providers/openwrt/
+├── commands.py
+├── parsers.py
+└── provider.py
+
+Completed
+
+    OpenWrt provider structure exists.
+    OpenWrt parsing logic has begun.
+
+Missing
+
+Provider needs to:
+
+    Execute commands through RouterConnection.
+    Return SystemStatus.
+    Return MemoryStatus.
+    Handle missing metrics.
+    Translate SSH failures into application exceptions.
+
+Example:
+
+OpenWrt
+   |
+   |
+SSH commands
+   |
+   v
+Parser
+   |
+   v
+SystemStatus
+MemoryStatus
+
+🟡 7. Provider Registry
+
+Status: Partially Complete
+
+Existing:
+
+firmware_status_providers/registry.py
+
+Remaining work
+
+Registry should support:
+
+provider = registry.get_provider(router)
+
+Example:
+
+FirmwareIdentity
+        |
+        v
+ProviderRegistry
+        |
+        +--> OpenWrtProvider
+        |
+        +--> DDWRTProvider
+        |
+        +--> NetgearProvider
+
+Requirements:
+
+    No firmware checks outside registry.
+    Adding providers should not modify GUI code.
+
+🔴 8. Router Provider Integration
+
+Status: Missing
+
+Current:
+
+Router
+ └── FirmwareIdentity
+
+Target:
+
+Router
+ ├── Identity
+ ├── Candidate
+ ├── State
+ ├── ConnectionManager
+ └── FirmwareStatusProvider
+
+The Router should be able to request:
+
+router.status()
+
+without knowing:
+
+    OpenWrt commands
+    DD-WRT commands
+    Netgear APIs
+
+🔴 9. Implement Status Service Layer
+
+Status: Missing
+
+Create:
+
+router_comms/
+└── status_service.py
+
+Purpose:
+
+Provide GUI-facing methods:
+
+get_system_status()
+get_memory_status()
+get_storage_status()
+
+Architecture:
+
+Web Route
+
+   |
+   v
+
+Status Service
+
+   |
+   v
+
+Firmware Provider
+
+   |
+   v
+
+Connection Manager
+
+   |
+   v
+
+SSH Router
+
+🔴 10. GUI Status Dashboard
+
+Status: Not Started
+
+Current GUI:
+
+ui/
+├── router.py
+├── welcome.py
+└── templates/
+
+The next GUI milestone:
+
+Router dashboard showing:
+Router
+
+    IP address
+    MAC address
+    Firmware
+    Firmware version
+    Connection state
+
+System
+
+    Hostname
+    Model
+    Architecture
+    Kernel
+    Uptime
+    Load
+
+Memory
+
+    Total
+    Used
+    Available
+
+🔴 11. Status Error Handling
+
+Status: Missing
+
+Need explicit handling for:
+Condition	UI Result
+Router offline	Disconnected
+SSH failure	Connection unavailable
+Unknown firmware	Unsupported firmware
+Missing metric	Unavailable
+Command failure	Partial status
+
+A single failed metric should not break the entire page.
+🔴 12. Provider Test Suite
+
+Status: Missing
+
+Required:
+
+tests/router_comms/
+└── firmware_status_providers/
+    ├── test_registry.py
+    ├── test_openwrt.py
+    └── test_provider.py
+
+Tests:
+
+    Provider selection
+    Command execution
+    Parsing
+    Missing fields
+    SSH failure handling
+
+No physical router required.
+🔴 13. DD-WRT Provider
+
+Status: Not Started
+
+Future:
+
+firmware_status_providers/
+└── ddwrt.py
+
+After OpenWrt is stable.
+🔴 14. Native Netgear Support
+
+Status: Not Started
+
+Future:
+
+firmware_status_providers/
+└── netgear.py
+
+Provider may report unsupported capabilities.
+🔴 15. Capability Reporting
+
+Status: Not Started
+
+Future:
+
+Capabilities
+├── status
+├── memory
+├── storage
+├── temperature
+├── network
+├── wireless
+├── firewall
+└── configuration
+
+Needed before supporting very different firmware platforms.
+✅ 16. Preserve Initial Connection Page
+
+Status: Complete
+
+Current architecture already supports:
+
+Unknown Router
+       |
+       v
+Initial Connection
+       |
+       v
+Provision
+       |
+       v
+Known Router
+
+No redesign needed yet.
+✅ 17. Maintain Installation Model
+
+Status: Complete
+
+Existing:
+
+    src package layout
+    systemd integration
+    application packaging
+    executable entry point
+
+No changes required.
+Current Priority Order
+
+The next development sequence should be:
+Immediate
+
+    ✅ Finalize provider interface
+    🔴 Create SystemStatus / MemoryStatus models
+    🟡 Finish OpenWrt provider
+    🟡 Finish Provider Registry
+    🔴 Attach provider to Router
+    🔴 Add Status Service
+
+Then GUI
+
+    🔴 Create router dashboard page
+    🔴 Display firmware identity
+    🔴 Display system status
+    🔴 Display memory/storage status
+    🔴 Add status error states
+
+Later
+
+    DD-WRT provider
+    Netgear provider
+    Capability reporting
+    Additional GUI layouts
+
+Current Development Milestone
+
+You have completed the router management foundation.
+
+The next milestone is:
+
+    Firmware Provider Layer Complete
+
+Definition of done:
+
+Router
+ |
+ |-- FirmwareIdentity
+ |
+ |-- FirmwareStatusProvider
+          |
+          +-- OpenWrtProvider
+                    |
+                    +-- SystemStatus
+                    +-- MemoryStatus
+
+ |
+ v
+
+StatusService
+
+ |
+ v
+
+GUI Dashboard
+
+Once that exists, the GUI becomes a presentation layer rather than a place where router-specific logic accumulates.

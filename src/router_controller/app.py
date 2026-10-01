@@ -6,7 +6,11 @@ from .config import Config
 from .database import initialize_database
 from .logging_config import configure_logging
 from .router_comms.factory import create_router_services
-from .ui import register_routes, register_ui_context
+from .ui import (
+    register_routes,
+    register_status_ui,
+    register_ui_context
+)
 from .ui.welcome_service import WelcomeService
 
 def create_app(config_class=Config, provision_router=None):
@@ -30,21 +34,30 @@ def create_app(config_class=Config, provision_router=None):
         services = create_router_services(config_class)
 
         if provision_router is None:
-            provision_router = (
-                services.provisioner.provision
-            )
-
+            provision_router = services.provisioner.provision
+            
         welcome_service = WelcomeService(
             router_repository=services.router_repository,
             key_manager=services.key_manager,
         )
 
+    original_provision_router = provision_router
+
+    def provision_and_store_router():
+        router = original_provision_router()
+
+        app.extensions["router"] = router
+
+        return router
+
     register_routes(
         app,
-        provision_router,
+        #provision_router,
+        provision_and_store_router,
         welcome_service,
     )
-
+    
+    register_status_ui(app)
     register_ui_context(app)
 
     return app

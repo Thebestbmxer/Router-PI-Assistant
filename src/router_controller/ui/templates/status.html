@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Router Status</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='status/status.css') }}">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-mark">R</span>
+
+                <div>
+                    <div class="brand-name">
+                        Router PI
+                    </div>
+
+                    <div class="brand-subtitle">
+                        Router Controller
+                    </div>
+                </div>
+            </div>
+
+            <div id="connection-indicator"
+                 class="connection disconnected">
+
+                <span class="connection-dot"></span>
+
+                <span id="connection-text">
+                    Checking...
+                </span>
+
+            </div>
+        </header>
+
+
+        <main class="content">
+
+            <section class="page-heading">
+                <div>
+                    <h1>Router Status</h1>
+
+                    <p>
+                        Current connection and router information
+                    </p>
+                </div>
+            </section>
+
+
+            <section class="status-grid">
+
+                <div class="card connection-card">
+
+                    <div class="card-header">
+                        <h2>SSH Connection</h2>
+                    </div>
+
+                    <div class="connection-state">
+
+                        <div id="ssh-status-icon"
+                             class="status-icon disconnected">
+                            ×
+                        </div>
+
+                        <div>
+                            <div id="ssh-status"
+                                 class="status-title">
+                                Checking
+                            </div>
+
+                            <div id="ssh-message"
+                                 class="status-description">
+                                Checking the router connection...
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-header">
+                        <h2>Router</h2>
+                    </div>
+
+                    <div class="info-list">
+
+                        <div class="info-row">
+                            <span>Address</span>
+                            <strong id="router-address">—</strong>
+                        </div>
+
+                        <div class="info-row">
+                            <span>SSH Port</span>
+                            <strong id="router-port">—</strong>
+                        </div>
+
+                        <div class="info-row">
+                            <span>MAC Address</span>
+                            <strong id="router-mac">—</strong>
+                        </div>
+
+                        <div class="info-row">
+                            <span>Firmware</span>
+                            <strong id="router-firmware">—</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='status/status.js') }}"></script>
+
+</body>
+</html>
