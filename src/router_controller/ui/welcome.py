@@ -17,7 +17,8 @@ def register_routes(app, provision_router, welcome_service=None):
     def index():
         status = welcome_service.get_status()
         
-        if status.ssh_key_present:
+        #if status.ssh_key_present:
+        if status.ready:
             return redirect(url_for("status_page"))
 
         return render_template(
