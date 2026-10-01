@@ -89,6 +89,20 @@ class RouterConnection:
         )
 
         try:
+            private_key = paramiko.RSAKey.from_private_key_file(
+                str(self.key_pair.private_key_path)
+            )
+
+            client.connect(
+                hostname=self.candidate.address,
+                port=self.candidate.ssh_port,
+                username=self.config.username,
+                pkey=private_key,
+                timeout=self.config.timeout,
+                allow_agent=False,
+                look_for_keys=False,
+            )
+            '''
             client.connect(
                 hostname=self.candidate.address,
                 port=self.candidate.ssh_port,
@@ -98,7 +112,7 @@ class RouterConnection:
                 allow_agent=False,
                 look_for_keys=False,
             )
-
+'''
         except RouterIdentityError:
             client.close()
             raise
@@ -107,6 +121,7 @@ class RouterConnection:
             paramiko.AuthenticationException,
             paramiko.SSHException,
             OSError,
+            ValueError,
         ) as exc:
             client.close()
 
