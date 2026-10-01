@@ -29,6 +29,11 @@ where = ["src"]
 router_controller = [
     "ui/templates/*.html",
 	"ui/static/**/*",
+	
+    "ui/layouts/**/*.json",
+    "ui/layouts/**/*.html",
+    "ui/layouts/**/*.css",
+    "ui/layouts/**/*.js",
 ]
 
 [tool.pytest.ini_options]
