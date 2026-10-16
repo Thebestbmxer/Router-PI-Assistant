@@ -1,590 +1,276 @@
 Router-PI-Assistant Roadmap
 
-Current baseline: 111 tests passing.
+Status: Active development
+Primary target: Raspberry Pi running Linux, managing an OpenWrt router
+Authoritative roadmap: This file
+Last reviewed: 2026-10-16
 
-The project has evolved from a router-provisioning utility into something broader: a LAN-based router management appliance running on the Raspberry Pi.
+1. Project vision
+
+Router-PI-Assistant is a Raspberry Pi-based management appliance that provides a secure, centralized interface for administering an OpenWrt router and eventually managing additional network services hosted on the Pi.
+
+The long-term goal is to make the Pi the trusted management point for the network appliance, providing router status, network configuration, an administrative terminal, service management, monitoring, and recovery capabilities.
+
+Development prioritizes security, reliability, testability, and incremental delivery.
+
+2. Development principles
+Preserve working functionality. Extend the existing architecture instead of rebuilding completed components.
+One management path. Application services use the Router abstraction, connection manager, and established SSH infrastructure rather than creating independent router connections.
+Read before write. Implement and validate read-only status collection before introducing configuration changes.
+Secure by default. Verify router identity, protect credentials, and restrict the management interface to the intended LAN boundary.
+Test every change. Add automated tests for new behavior and run the existing suite before deployment.
+Validate on hardware. Mocked tests are necessary but do not replace testing against the actual router.
+Deliver in small increments. Each milestone must have clear acceptance criteria.
+Keep this roadmap current. Completed work is removed from the active backlog only after its acceptance criteria are met.
+3. Current baseline
+
+The existing roadmap reports completion of the following foundations:
+
+Python application structure and packaging.
+Flask application infrastructure, configuration, and logging.
+systemd integration and upgrade-related support.
+Automated tests for application and router communication functionality.
+Router discovery and stable identity.
+Persistent router state.
+SSH key management and bootstrap provisioning.
+Authenticated SSH connections with host-key verification.
+Router connection management and integration with persisted state.
+
+The existing roadmap reports 111 passing tests. This is a documented baseline, not a guarantee that the suite has been rerun against the current checkout.
+
+Before beginning new implementation work, verify the current code, test results, installed Raspberry Pi version, and physical-router behavior. Update this section when the baseline has been confirmed.
+
+4. Milestone 1 — Complete the core management workflow
+
+Priority: P0 — Immediate
+
+Objective: Allow a LAN administrator to open Router-PI-Assistant and inspect trustworthy, live information from the connected router.
+
+Work items
+Finalize the application-facing Router management API.
+Establish clear boundaries between Flask routes, application services, router state, the connection manager, and SSH transport.
+Implement structured router system status collection.
+Implement structured network status collection.
+Integrate status models and parsing with the existing router communication architecture.
+Add a read-only Router Status page.
+Add a connection-aware Router Status entry point to the Welcome page.
+Test the complete workflow using both mocked connections and the physical OpenWrt router.
+Initial status information
+
+System:
+
+Hostname, model, and firmware release.
+Kernel, architecture, and platform.
+Uptime, load average, and local time.
+
+Network:
+
+Interfaces and IP addresses.
+Routes and WAN/LAN state.
+DHCP and DNS information where available.
+Wireless status where supported.
+
+Management:
+
+Known router identity.
+Current connection state.
+SSH host-key identity.
+Current address and last-seen information.
+Clear error details when status cannot be retrieved.
+
+Optional fields must be handled gracefully when a router does not expose them.
+
+Acceptance criteria
+The application uses the existing trusted router connection.
+Status is returned as structured application data, not raw shell output.
+The UI distinguishes connected, disconnected, stale, and failed status retrieval.
+No router configuration is changed by status requests.
+Automated tests cover parsing, missing data, and connection failures.
+The complete workflow succeeds against the physical router.
+
+Milestone complete when: A LAN user can open the application, see the router connection state, and inspect real read-only system and network status.
+
+5. Milestone 2 — Reliable administration and terminal access
+
+Priority: P1 — After Milestone 1
+
+Objective: Make the Pi a dependable administrative entry point for the router.
+
+Work items
+Implement an interactive SSH session abstraction using the existing connection infrastructure.
+Provide a web terminal with streaming input/output, clean session termination, and long-running command support.
+Handle terminal resizing, interruption, and session timeouts.
+Recover cleanly from router reboots, SSH disconnects, and network interruptions.
+Distinguish connectivity failures from host-identity or authentication failures.
+Add refreshable router health and last-seen information.
+Add appropriate session access controls, request validation, and audit logging.
+Acceptance criteria
+The terminal does not create a competing SSH connection implementation.
+Sessions terminate safely and do not persist unintentionally.
+Disconnects and authentication failures are reported clearly.
+The terminal cannot be accessed from unintended network interfaces.
+Automated tests cover session lifecycle and failure handling.
+Interactive terminal behavior is validated against the real router.
+6. Milestone 3 — Structured router network management
+
+Priority: P2 — After the management workflow is reliable
+
+Objective: Provide common router administration operations through validated application services.
+
+Work items
+Introduce structured, validated configuration operations.
+Add interface and IP-address management.
+Add WAN/LAN configuration and connectivity status.
+Add DHCP and DNS management.
+Add wireless configuration.
+Add firewall and service management.
+Refresh displayed state after successful changes.
+Provide clear validation errors and operation results.
+Safety requirements
+Validate requested changes before executing them.
+Avoid building arbitrary shell commands directly from web input.
+Require explicit confirmation for disruptive operations.
+Detect changes that could disconnect the administrator.
+Where feasible, support rollback or a recovery procedure.
+Do not report success until the operation has been verified.
+Acceptance criteria
+Each operation has a defined input, validation process, and result.
+Tests cover invalid input, command failures, and state refresh.
+Critical operations have documented recovery procedures.
+Real-router tests demonstrate successful changes and recovery from failures.
+7. Milestone 4 — Raspberry Pi network services
+
+Priority: P3 — After core router administration
+
+Objective: Integrate services that complement OpenWrt and provide centralized network-service management.
+
+Work items
+Integrate Pi-hole status and service management.
+Integrate Unbound status and service management.
+Expose DNS health and resolver availability.
+Present service state, relevant statistics, and configuration status.
+Define the intended DHCP/DNS configuration between OpenWrt, Pi-hole, and Unbound.
+Add service restart, failure reporting, and recovery workflows.
+Verify the complete DNS path from a LAN client to the upstream resolver.
+Acceptance criteria
+The application distinguishes service failure from router connectivity failure.
+DNS dependencies and configuration are documented.
+Service operations are validated and recoverable.
+DNS behavior is verified from an actual LAN client.
+8. Milestone 5 — Managed appliance and release readiness
+
+Priority: P4 — After the core platform is stable
+
+Objective: Make the system safer to operate, maintain, update, and recover.
+
+Work items
+Implement router configuration backup, comparison, and controlled restore.
+Associate backups with router identity and validate the target before restoration.
+Add firmware information and upgrade preparation.
+Implement firmware upgrades only after recovery and post-upgrade verification procedures are established.
+Review management-interface binding, authentication, authorization, secrets, and logging.
+Validate installation and upgrades using the project's packaging and systemd infrastructure.
+Add hardware-specific integration testing alongside the normal automated test suite.
+Document recovery, backup restoration, and troubleshooting.
+Establish release and version-validation procedures.
+Acceptance criteria
+Installation and upgrades are reproducible on the target Raspberry Pi.
+Existing application data survives supported upgrades.
+Backup restoration validates the target router and configuration.
+High-risk operations have explicit safeguards and documented recovery.
+Release checks and automated tests pass before deployment.
+9. Architecture and compatibility decisions
+Router management architecture
+
+Maintain the separation between:
+
+Web interface and Flask routes.
+Application services.
+Router and persistent router state.
+Router connection manager.
+SSH connection and transport.
+Structured status models and configuration operations.
+Firmware providers
+
+The existing firmware-provider proposal should be reconciled with the actual code before implementation.
+
+OpenWrt remains the primary target. Additional firmware support should be introduced only when a concrete need exists and the provider boundary offers a practical benefit.
+
+If implemented, firmware-specific providers should translate device-specific responses into common application models without replacing the trusted connection infrastructure.
+
+Do not build multiple firmware adapters speculatively.
 
-The Pi is intended to become the trusted management plane for the router while also hosting services that the router cannot efficiently provide, such as Pi-hole and Unbound.
-Phase 1 — Application Foundation ✅
-1. Project structure and packaging — Complete
-
-The project has a proper installable src/ layout with:
-
-    application configuration
-    logging
-    Flask application infrastructure
-    package metadata
-    systemd support
-    upgrade support
-    application entry point
-
-The project is structured as a system application rather than depending on development-directory execution.
-2. Automated testing — Complete
-
-The project now has a broad automated test suite covering application and router communication functionality.
-
-Current baseline: 111 tests passing.
-Phase 2 — Router Discovery & Identity ✅
-3. Router discovery — Complete
-
-The controller can discover router candidates and represent their network information.
-4. Router identity — Complete
-
-Router identity is based on stable information including:
-
-    MAC address
-    SSH host-key fingerprint
-
-This allows the controller to distinguish a known router from a newly discovered device.
-5. Persistent router state — Complete
-
-Router state can be represented and persisted independently of transient discovery information.
-
-This establishes the foundation for recognizing routers across application restarts.
-Phase 3 — Secure Router Access ✅
-6. Controller SSH key management — Complete
-
-The controller can load or generate its SSH key pair.
-7. Bootstrap provisioning — Complete
-
-The provisioning workflow can:
-
-    establish initial router access
-    install the controller's public key
-    close the bootstrap connection
-    establish the permanent controller connection
-
-8. Persistent SSH connections — Complete
-
-The project has a dedicated SSH connection abstraction handling:
-
-    controller-key authentication
-    connection lifecycle
-    command execution
-    connection state
-    cleanup
-    communication failures
-
-9. SSH host identity verification — Complete
-
-The permanent SSH connection verifies the router's expected host-key fingerprint.
-
-This establishes the core trust relationship:
-
-Pi
- │
- │ trusted SSH identity
- ▼
-Router
-
-10. Connection manager — Complete
-
-RouterConnectionManager provides the higher-level connection lifecycle and incorporates persisted router state when creating SSH connections.
-11. Router/connection integration — Complete
-
-Router now retains:
-
-    identity
-    discovery candidate
-    persistent state
-    connection manager
-
-The router object is therefore becoming the central representation of a managed router.
-Phase 4 — Management Plane 🔄
-
-Current development phase
-
-The focus now shifts from "Can the Pi connect to the router?" to:
-
-    "Can the Pi manage the router and provide the administrator with a useful management interface?"
-
-The Raspberry Pi becomes the authoritative management plane.
-
-LAN Administrator
-        │
-        ▼
-Router-PI-Assistant
-        │
-        ▼
-RouterConnectionManager
-        │
-        ▼
-OpenWrt Router
-
-12. Establish the Router management API
-
-Next priority
-
-Make Router the central object used by application services.
-
-The architecture should develop toward:
-
-Web/UI
-  │
-  ▼
-Application Services
-  │
-  ▼
-Router
-  │
-  ▼
-RouterConnectionManager
-  │
-  ▼
-RouterConnection
-  │
-  ▼
-Paramiko
-
-Higher-level application code should not directly manipulate Paramiko.
-
-This provides one consistent management path for:
-
-    status
-    configuration
-    networking
-    services
-    terminal
-    future automation
-
-Phase 5 — Router Status Interface
-13. Build Router Status service
-
-Create a read-oriented service responsible for obtaining structured information from the router.
-
-Initial information should include:
-System
-
-    hostname
-    OpenWrt release
-    kernel
-    architecture
-    target/platform
-    uptime
-
-Network
-
-    interfaces
-    addresses
-    routes
-    WAN status
-    LAN status
-    DNS configuration
-
-Management
-
-    SSH connection state
-    router identity
-    host-key fingerprint
-    current IP
-    last-seen information
-
-The service should return structured application data rather than raw command output.
-14. Build the Router Status page
-
-Add a new web page displaying the information collected by the status service.
-
-The first version should be intentionally read-only.
-
-This becomes the first real end-to-end management feature:
-
-Browser
-   ↓
-Flask
-   ↓
-Router Status Service
-   ↓
-Router
-   ↓
-SSH
-   ↓
-OpenWrt
-
-This page will also become an important real-router testing interface.
-15. Add Router Status to the Welcome page
-
-The Welcome page should expose a:
-
-Router Status
-
-button.
-
-The button should reflect the router's actual management connection state.
-Connected
-
-[ Router Status ]
-
-enabled.
-Not connected
-
-The button should either be disabled or clearly indicate that the router is unavailable.
-
-The UI should derive this state from the application rather than independently determining SSH connectivity.
-Phase 6 — Integrated Router Terminal
-16. Add a web terminal
-
-A terminal should become a first-class management feature.
-
-Conceptually:
-
-Administrator
-     │
-     │ Browser
-     ▼
-Router-PI-Assistant
-     │
-     │ SSH
-     ▼
-OpenWrt root shell
-
-The terminal gives administrators complete router access even when a particular management function has not yet been implemented in the GUI.
-
-This is especially useful during development.
-17. Implement interactive SSH sessions
-
-The existing execute() API is suitable for individual commands but not a true terminal.
-
-The terminal should eventually use an interactive SSH channel/PTY supporting:
-
-    persistent shell session
-    stdin
-    stdout
-    stderr
-    streaming output
-    Ctrl-C
-    terminal resize
-    long-running commands
-    clean session termination
-
-The architecture should become:
-
-Web Terminal
-     │
-     ▼
-Terminal Service
-     │
-     ▼
-RouterConnectionManager
-     │
-     ▼
-Interactive SSH channel
-     │
-     ▼
-OpenWrt shell
-
-The terminal should reuse the same trusted router connection infrastructure rather than creating an independent SSH implementation.
-Phase 7 — Router Network Management
-18. Implement structured network management
-
-Once status is working, build services around the router's network configuration.
-
-Initial areas:
-
-    interfaces
-    IP addresses
-    DHCP
-    DNS
-    routes
-    WAN
-    LAN
-    wireless
-    firewall
-
-The GUI should progressively expose common operations while the terminal remains available for advanced administration.
-19. Router configuration management
-
-Introduce controlled configuration operations.
-
-Potential areas:
-
-    hostname
-    LAN configuration
-    WAN configuration
-    DHCP
-    DNS
-    wireless
-    firewall
-    services
-
-The preferred architecture is:
-
-GUI operation
-      ↓
-Router service
-      ↓
-validated operation
-      ↓
-SSH
-      ↓
-OpenWrt
-
-rather than generating arbitrary shell commands in Flask routes.
-Phase 8 — Pi as Network Services Platform
-
-The project should now expand beyond router management.
-
-The Raspberry Pi becomes the host for services that complement OpenWrt.
-20. Pi-hole integration
-
-Provide management and status information for Pi-hole.
-
-Potential GUI areas:
-
-    service status
-    DNS status
-    blocked queries
-    query statistics
-    configuration
-    start/stop/restart
-
-21. Unbound integration
-
-Provide management of the local recursive DNS resolver.
-
-Potential functionality:
-
-    service status
-    configuration
-    DNS health
-    resolver statistics
-    start/stop/restart
-    integration with Pi-hole
-
-22. Unified DNS architecture
-
-Eventually the application should understand the intended DNS path:
-
-LAN Clients
-     │
-     ▼
-    Pi-hole
-     │
-     ▼
-   Unbound
-     │
-     ▼
-   Internet
-
-while Router-PI-Assistant manages the router-side DHCP/DNS configuration needed to make that architecture work.
-Phase 9 — Router as a Managed Appliance
-23. Router configuration profiles
-
-Introduce higher-level configuration concepts.
-
-For example:
-
-Home Network
-Small Office
-Secure DNS
-Guest Network
-IoT Network
-
-The controller could eventually translate these into router configuration.
-
-This is where Router-PI-Assistant begins moving from a collection of management commands toward an actual configuration-management system.
-24. Configuration backup and restore
-
-Implement router configuration lifecycle management:
-
-Router
-  │
-  ├── Backup
-  │
-  ├── Restore
-  │
-  └── Compare
-
-Backups should be associated with the known router identity and managed carefully so that configurations cannot accidentally be restored to the wrong device.
-25. Firmware management
-
-Eventually support:
-
-    firmware information
-    available firmware
-    upgrade preparation
-    firmware installation
-    reboot monitoring
-    post-upgrade verification
-
-Firmware operations should be treated as high-risk operations with additional validation and recovery handling.
-Phase 10 — Management Access Control
-26. Router SSH exposure management
-
-The Pi should be the router's default SSH management path:
-
-Pi → Router SSH       ENABLED
-LAN → Router SSH      DISABLED
-WAN → Router SSH      DISABLED
-
-The application should provide an explicit mechanism to allow secondary LAN SSH access when the administrator wants it.
-
-For example:
-
-Router SSH Access
-
-Pi management       ON
-LAN SSH access      OFF
-
-[ Enable LAN SSH ]
-
-This allows the Pi to remain the router's primary management authority without permanently preventing advanced users from connecting directly.
-27. Define the LAN management boundary
-
-The intended deployment model is:
-
-                    WAN / WWAN
-                        │
-                        X
-                        │
-                     Router
-                        │
-                       LAN
-                        │
-                ┌───────┴───────┐
-                │               │
-               Pi            LAN users
-                │
-        Router-PI-Assistant
-
-The management application should be designed so that the administrative interface is intended for LAN access and is not accidentally exposed through WAN/WWAN interfaces.
-Phase 11 — Reliability & Monitoring
-28. Connection recovery
-
-Handle:
-
-    router reboot
-    SSH disconnects
-    network interruptions
-    stale connections
-    temporary router unavailability
-
-The controller should distinguish between connection failures and identity/security failures.
-29. Router state refresh
-
-Introduce regular or on-demand state refresh.
-
-For example:
-
-Router
- ├── Refresh status
- ├── Refresh network
- └── Refresh identity
-
-The controller should maintain accurate last_seen and connectivity information.
-30. Health monitoring
-
-Eventually monitor both the router and Pi-hosted services.
-
-System Health
-├── Router
-│   ├── SSH
-│   ├── WAN
-│   ├── LAN
-│   └── DNS
-│
-└── Pi
-    ├── Pi-hole
-    ├── Unbound
-    └── Router-PI-Assistant
-
-Phase 12 — Persistence Architecture
-31. Complete the router repository
-
-The remaining repository architecture should be finalized so the application has one clear persistent model for known routers.
-
-It should support:
-
-    locating a router by MAC
-    loading persistent state
-    updating state
-    tracking router identity
-    handling changed IP addresses
-    recording timestamps
-
-The database should store persistent information; live SSH connections should remain transient application objects.
-Phase 13 — Testing & Validation
-32. Expand mocked integration tests
-
-Test complete workflows such as:
-
-Discovery
-   ↓
-Provisioning
-   ↓
 Persistence
-   ↓
-Connection
-   ↓
-Status collection
-   ↓
-Web presentation
 
-33. Add real-router integration tests
+Keep persistent router identity and state separate from transient SSH connections. Confirm that state updates, changed IP addresses, timestamps, and router lookup remain consistent across application restarts.
 
-Eventually maintain a separate hardware test category for a physical OpenWrt router.
+10. Testing and quality gates
 
-Normal development remains:
+For each change:
 
-pytest
+Add or update automated tests.
+Run the complete existing test suite.
+Check packaging, application startup, and relevant static or release checks.
+Deploy the change to the Raspberry Pi.
+Validate the feature against the physical router when the change affects real router behavior.
+Record any limitations or known failures.
 
-while hardware-specific tests can be run separately.
+Maintain separate categories for:
 
-This prevents a physical router from becoming a prerequisite for normal application development.
-Phase 14 — Long-Term Platform
+Unit tests.
+Mocked integration tests.
+Packaging and installation tests.
+Hardware-specific router tests.
 
-Once the above pieces are mature, Router-PI-Assistant can become a unified network-management platform:
+Normal development must not require a physical router for every test run.
 
-                         LAN Administrator
-                                │
-                                ▼
-                 ┌──────────────────────────┐
-                 │   Router-PI-Assistant    │
-                 │                          │
-                 │ Dashboard                │
-                 │ Router Status             │
-                 │ Network Management        │
-                 │ Configuration             │
-                 │ Terminal                  │
-                 │ Service Management        │
-                 └────────────┬─────────────┘
-                              │
-              ┌───────────────┴────────────────┐
-              │                                │
-              ▼                                ▼
-        ┌───────────┐                    ┌─────────────┐
-        │  OpenWrt  │                    │ Raspberry Pi│
-        │  Router   │                    │  Services   │
-        └───────────┘                    └─────────────┘
-              │                                │
-       ┌──────┼───────┐                 ┌──────┼──────┐
-       │      │       │                 │      │      │
-      WAN    LAN    WiFi              Pi-hole Unbound ...
+11. Development and deployment workflow
 
-The long-term goal is therefore not simply "a GUI for SSH."
+The standard development cycle is:
 
-It is:
+Develop in Visual Studio on the development machine.
+Run the local test suite and relevant checks.
+Commit and push changes to GitHub.
+Pull the intended revision onto the Raspberry Pi.
+Run required installation or upgrade steps.
+Restart the application service if necessary.
+Check service health and application logs.
+Verify the change through the web interface and against the physical router when applicable.
 
-    A Raspberry Pi-based management plane that securely controls an OpenWrt router, provides advanced network services, and gives the LAN administrator a unified interface for the entire network appliance.
+Keep the deployed revision identifiable so that a failed deployment can be diagnosed and rolled back to a known-good revision.
 
-Immediate Development Queue
+Do not deploy untested changes directly into a workflow that could interrupt router administration.
 
-Given the current 111/111 test baseline, I recommend we proceed in this exact order:
+12. Immediate development queue
 
-    Define RouterStatus and the router status service.
-    Implement read-only OpenWrt system information collection.
-    Implement network information collection.
-    Add tests for command parsing and status generation.
-    Create the /router/status Flask route.
-    Build the Router Status page.
-    Add the connection-aware Router Status button to the Welcome page.
-    Test the complete status workflow against the physical router.
-    Design the interactive SSH/PTY abstraction.
-    Add the web terminal using the existing router connection architecture.
-    Begin structured router network/configuration management.
-    Begin Pi service integration with Pi-hole and Unbound.
+Work in this order:
 
-The immediate milestone is now:
+Verify the current code and actual test baseline.
+Reconcile the Router API and application service boundaries.
+Complete structured, read-only system status collection.
+Complete structured network status collection.
+Add and test the Router Status application endpoint.
+Build the Router Status page and Welcome-page entry point.
+Validate the complete status workflow against the physical router.
+Begin interactive SSH terminal design and implementation.
+Improve connection recovery and health reporting.
+Begin structured network configuration operations.
+Plan Pi-hole and Unbound integration.
+Prepare appliance hardening and release readiness.
+13. Scope control
 
-    A LAN user can open Router-PI-Assistant, see whether the Pi has a trusted SSH connection to the router, open Router Status, and inspect real read-only information collected directly from OpenWrt.
+The following are not immediate priorities:
 
-Once that works against the actual router, the terminal becomes the natural next feature and gives us a powerful administrative fallback while the structured management APIs continue to grow.
+Supporting multiple additional firmware platforms before OpenWrt management is proven.
+Building a complex dashboard before the underlying status data is reliable.
+Implementing broad configuration management before read-only collection is stable.
+Adding advanced automation before safe, validated operations exist.
+Implementing firmware upgrades before recovery procedures are established.
+
+These features remain possible future work; they should not delay the current milestone.
+
+Definition of success
+
+The project succeeds when Router-PI-Assistant provides a secure and dependable LAN management interface for an OpenWrt router, uses a consistent and trusted management architecture, and can be installed, upgraded, tested, and recovered on the Raspberry Pi.
+
+The first major delivery is a fully tested, read-only router status workflow against the real device. Subsequent milestones build on that verified foundation.
