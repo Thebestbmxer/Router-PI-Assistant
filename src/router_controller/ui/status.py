@@ -85,5 +85,5 @@ def register_status_routes(app):
                 ),
                 "message": "Router SSH connection is active.",
             }
-        """
         )
+        """
