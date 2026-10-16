@@ -1,16 +1,20 @@
+
 """Router status web UI."""
 
 import logging
-from flask import jsonify, render_template
 from dataclasses import asdict
 
+from flask import jsonify, render_template
+
 logger = logging.getLogger(__name__)
+
 
 def register_status_routes(app):
     """Register router status UI and API routes."""
 
     @app.get("/status")
     def status_page():
+        """Render the router status page."""
         router = app.extensions.get("router")
 
         return render_template(
@@ -20,6 +24,7 @@ def register_status_routes(app):
 
     @app.get("/api/router/status")
     def router_status():
+        """Return router connection and system status as JSON."""
         router = app.extensions.get("router")
 
         if router is None:
@@ -28,6 +33,7 @@ def register_status_routes(app):
                     "configured": False,
                     "connected": False,
                     "message": "No router connection is active.",
+                    "errors": [],
                 }
             ), 503
 
@@ -37,6 +43,7 @@ def register_status_routes(app):
                     "configured": True,
                     "connected": False,
                     "message": "Router SSH connection is not active.",
+                    "errors": [],
                 }
             ), 503
 
@@ -61,54 +68,10 @@ def register_status_routes(app):
             status_data = asdict(status)
             data.update(status_data)
 
-        except Exception as exc:
+        except Exception:
             logger.exception("Unable to collect router status")
             data["errors"].append(
-                f"Router metrics unavailable: {exc}"
+                "Router metrics are temporarily unavailable."
             )
 
         return jsonify(data)
-    """
-        except Exception:
-            logger.exception("Unable to collect router status")
-            status_data = {
-                "system": None,
-                "memory": None,
-                "storage": None,
-                "temperature": None,
-                "errors": ["Router status collection failed."],
-            }
-
-        return jsonify(
-            {
-                "configured": True,
-                "connected": True,
-                "address": router.candidate.address,
-                "ssh_port": router.candidate.ssh_port,
-                "mac_address": router.identity.mac_address,
-                "firmware": (
-                    router.firmware_identity.name
-                    if router.firmware_identity
-                    else None
-                ),
-                "message": "Router SSH connection is active.",
-                **status_data,
-            }
-        )
-        '''
-        return jsonify(
-            {
-                "configured": True,
-                "connected": True,
-                "address": router.candidate.address,
-                "ssh_port": router.candidate.ssh_port,
-                "mac_address": router.identity.mac_address,
-                "firmware": (
-                    router.firmware_identity.name
-                    if router.firmware_identity
-                    else None
-                ),
-                "message": "Router SSH connection is active.",
-            }
-        )
-        """
