@@ -58,6 +58,10 @@ async function updateStatus() {
         const data = await response.json();
 
         updateConnectionState(data);
+        setText(
+            "router-hostname",
+            data.system?.hostname
+        );
 
     } catch (error) {
 

@@ -2,6 +2,7 @@
 
 import logging
 from flask import jsonify, render_template
+from dataclasses import asdict
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,37 @@ def register_status_routes(app):
                 }
             ), 503
 
+
+        try:
+            status = router.status()
+            status_data = asdict(status)
+        except Exception:
+            logger.exception("Unable to collect router status")
+            status_data = {
+                "system": None,
+                "memory": None,
+                "storage": None,
+                "temperature": None,
+                "errors": ["Router status collection failed."],
+            }
+
+        return jsonify(
+            {
+                "configured": True,
+                "connected": True,
+                "address": router.candidate.address,
+                "ssh_port": router.candidate.ssh_port,
+                "mac_address": router.identity.mac_address,
+                "firmware": (
+                    router.firmware_identity.name
+                    if router.firmware_identity
+                    else None
+                ),
+                "message": "Router SSH connection is active.",
+                **status_data,
+            }
+        )
+       """
         return jsonify(
             {
                 "configured": True,
@@ -53,4 +85,5 @@ def register_status_routes(app):
                 ),
                 "message": "Router SSH connection is active.",
             }
+        """
         )
