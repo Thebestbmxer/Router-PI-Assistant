@@ -55,6 +55,11 @@ async function updateStatus() {
             }
         );
 
+        //const data = await response.json();
+        if (!response.ok) {
+            throw new Error(`Status request failed: HTTP ${response.status}`);
+        }
+
         const data = await response.json();
 
         updateConnectionState(data);
@@ -74,6 +79,56 @@ async function updateStatus() {
 }
 
 
+function updateConnectionState(data) {
+    const indicator =
+        document.getElementById("connection-indicator");
+    const connectionText =
+        document.getElementById("connection-text");
+    const icon =
+        document.getElementById("ssh-status-icon");
+    const status =
+        document.getElementById("ssh-status");
+    const message =
+        document.getElementById("ssh-message");
+
+    const connected = Boolean(data.connected);
+
+    if (indicator) {
+        indicator.classList.toggle("connected", connected);
+        indicator.classList.toggle("disconnected", !connected);
+    }
+
+    if (connectionText) {
+        connectionText.textContent = connected ? "ONLINE" : "OFFLINE";
+    }
+
+    if (icon) {
+        icon.classList.toggle("connected", connected);
+        icon.classList.toggle("disconnected", !connected);
+        icon.textContent = connected ? "✓" : "×";
+    }
+
+    if (status) {
+        status.textContent = connected ? "Connected" : "Disconnected";
+    }
+
+    if (message) {
+        message.textContent = connected
+            ? "The Raspberry Pi is authenticated to the router using SSH."
+            : (
+                data.message ||
+                "The router SSH connection is unavailable."
+            );
+    }
+
+    setText("router-hostname", data.system?.hostname);
+    setText("router-address", data.address);
+    setText("router-port", data.ssh_port);
+    setText("router-mac", data.mac_address);
+    setText("router-firmware", data.firmware);
+}
+
+/*
 function updateConnectionState(data) {
 
     const indicator =
@@ -154,7 +209,7 @@ function updateConnectionState(data) {
     );
 }
 
-
+*/
 function setText(id, value) {
 
     const element =
