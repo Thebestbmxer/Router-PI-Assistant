@@ -70,7 +70,7 @@ def register_status_routes(app):
                 **status_data,
             }
         )
-       """
+        """
         return jsonify(
             {
                 "configured": True,
