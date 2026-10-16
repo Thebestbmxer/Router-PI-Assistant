@@ -40,10 +40,35 @@ def register_status_routes(app):
                 }
             ), 503
 
+        data = {
+            "configured": True,
+            "connected": True,
+            "address": router.candidate.address,
+            "ssh_port": router.candidate.ssh_port,
+            "mac_address": router.identity.mac_address,
+            "firmware": (
+                router.firmware_identity.name
+                if router.firmware_identity
+                else None
+            ),
+            "system": None,
+            "errors": [],
+            "message": "Router SSH connection is active.",
+        }
 
         try:
             status = router.status()
             status_data = asdict(status)
+            data.update(status_data)
+
+        except Exception as exc:
+            logger.exception("Unable to collect router status")
+            data["errors"].append(
+                f"Router metrics unavailable: {exc}"
+            )
+
+        return jsonify(data)
+    """
         except Exception:
             logger.exception("Unable to collect router status")
             status_data = {
@@ -70,7 +95,7 @@ def register_status_routes(app):
                 **status_data,
             }
         )
-        """
+        '''
         return jsonify(
             {
                 "configured": True,
