@@ -5,3 +5,5 @@ git pull https://github.com/TheBestBMXer/Router-PI-Assistant.git
 dpkg-buildpackage -us -uc -b
 sudo dpkg -i ../router-pi-controller_[whatever it says]_all.deb
 sudo systemctl restart router-controller
+
+Webpage is running at :8080
