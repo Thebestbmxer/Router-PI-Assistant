@@ -56,7 +56,7 @@ def _configure_layout_template_loader(
             base_loader,
         ]
     )
-
+    app.jinja_env.loader = app.jinja_loader
     app.jinja_env.cache.clear()
 
 def register_layout_manager(app: Flask) -> None:
@@ -68,8 +68,6 @@ def register_layout_manager(app: Flask) -> None:
     )
 
     manager = LayoutManager(layouts_path)
-    app.extensions["layout_manager"] = manager
-
     app.extensions["layout_manager"] = manager
 
     # Preserve the application's original template loader.
@@ -89,41 +87,6 @@ def register_layout_manager(app: Flask) -> None:
         app,
         manager,
     )
-
-    '''
-    active_layout = manager.active()
-
-    if active_layout is None:
-        raise RuntimeError(
-            "No active layout is available."
-        )
-
-    template_path = (active_layout.path / "templates")
-
-    app.jinja_loader = ChoiceLoader(
-        [
-            FileSystemLoader(
-                str(template_path)
-            ),
-            app.jinja_loader,
-        ]
-    )
-'''
-
-'''
-def register_layout_manager(app: Flask) -> None:
-    """Register the layout manager."""
-
-    layouts_path = (
-        Path(app.root_path)
-        / "ui"
-        / "layouts"
-    )
-
-    app.extensions["layout_manager"] = LayoutManager(
-        layouts_path
-    )
-'''
 
 def register_layout_ui(app: Flask) -> None:
     """Register the new layout-based UI."""
