@@ -1,0 +1,65 @@
+ROUTER-PI-ASSISTANT
+Repository: Thebestbmxer/Router-PI-Assistant
+Purpose: Repository structure reference
+
+ROOT/
+│
+├── .github/
+│   └── workflows/
+
+├── .debian/
+│   └── /
+
+├── .packaging/
+│   └── /
+│
+├── src/
+│   └── router_controller/
+│       ├── firmware_status_providers/
+│       ├── router_comms/
+│       |   ├── discovery/
+│       |   ├── router/
+│       |   ├── ssh/
+│       |   |── __init__.py
+│       |   |── exceptions.py
+│       |   |── existing_connection.py
+│       |   |── factory.py
+│       |   |── provisioner.py
+│       |   └── status_service.py
+│       ├── ui/
+│       |   ├── layout/
+│       |   ├── layouts/
+│       |   |   |── default/
+│       |   |   |── openwrt/
+│       |   |   └── active_layouts.json
+│       |   ├── static/
+│       |   ├── templates/
+│       |   |   |── base.html
+│       |   |   |── home.html
+│       |   |   |── provisioning_base.html
+│       |   |   |── status_old.html
+│       |   |   |── status.html
+│       |   |   └── welcome.html
+│       |   |── __init__.py
+│       |   |── old_static.py
+│       |   |── router.py
+│       |   |── status.py
+│       |   |── welcome_service.py
+│       |   |── welcome_status.py
+│       |   └── welcome.py
+│       |── __init__.py
+│       |── app.py
+│       |── config.py
+│       |── database.py
+│       |── logging_config.py
+│       └── main.py
+│
+├── tests/
+│
+├── tools/
+|
+├── .gitignore
+│
+├── pyproject.toml
+├── ROADMAP.md
+└── ...
