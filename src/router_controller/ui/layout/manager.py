@@ -15,41 +15,29 @@ class LayoutManager:
 
         self.layouts = {}
         self.active_layout_id = "default"
+        self.tabs = []
         self.load()
 
     def load(self):
-
         with self.registry_path.open(
             "r",
             encoding="utf-8",
         ) as file:
             registry = json.load(file)
 
-        self.active_layout_id = (
-            registry.get(
-                "active_layout",
-                "default",
-            )
+        self.active_layout_id = registry.get(
+            "active_layout",
+            "default",
         )
 
-        for layout_id in registry.get(
-            "enabled",
-            [],
-        ):
+        self._load_layout(self.active_layout_id)
 
-            self._load_layout(layout_id)
-
-    def _load_layout(
-        self,
-        layout_id: str,
-    ):
-
+    def _load_layout(self, layout_id: str):
         layout_path = (self.layouts_path / layout_id)
         definition_path = (layout_path / "layout.json")
 
         if not definition_path.exists():
             return
-
 
         with definition_path.open(
             "r",
@@ -60,32 +48,39 @@ class LayoutManager:
         layout = LayoutDefinition(
             id=data["id"],
             name=data["name"],
-            version=data.get(
-                "version",
-                "0.0.0",
-            ),
-            description=data.get(
-                "description",
-                "",
-            ),
+            version=data.get("version", "0.0.0"),
+            description=data.get("description", ""),
             path=layout_path,
         )
 
         self.layouts[layout.id] = layout
+        self._load_tabs(layout_path)
+
+    def _load_tabs(self, layout_path: Path):
+        """Load navigation tabs for a layout."""
+
+        tabs_path = layout_path / "tabs.json"
+
+        if not tabs_path.is_file():
+            raise FileNotFoundError(
+                f"Tabs configuration not found: {tabs_path}"
+            )
+
+        with tabs_path.open(
+            "r",
+            encoding="utf-8",
+        ) as file:
+            data = json.load(file)
+
+        self.tabs = data.get("tabs", [])
 
     def active(self):
         """Return the currently active layout."""
-
-        return self.layouts.get(
-            self.active_layout_id
-        )
+        return self.layouts.get(self.active_layout_id)
 
     def available(self):
         """Return all enabled layouts."""
-
-        return list(
-            self.layouts.values()
-        )
+        return list(self.layouts.values())
 
     def template_path(
         self,
@@ -115,10 +110,3 @@ class LayoutManager:
             )
 
         return template_path
-'''
-    def active(self):
-        return self.layouts.get(self.active_layout_id)
-
-    def available(self):
-        return list(self.layouts.values())
-'''

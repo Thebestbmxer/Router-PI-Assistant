@@ -30,6 +30,16 @@ ROOT/
 │       |   ├── layout/
 │       |   ├── layouts/
 │       |   |   |── default/
+│       |   |   |   |── static/css
+│       |   |   |   |   └── layout.css
+│       |   |   |   |── templates/
+│       |   |   |   |   |── components/
+│       |   |   |   |   |   └── tabs.html
+│       |   |   |   |   |── base.html
+│       |   |   |   |   |── router.html
+│       |   |   |   |   └── status.html
+│       |   |   |   |── layout.json
+│       |   |   |   └── tabs.json
 │       |   |   |── openwrt/
 │       |   |   └── active_layouts.json
 │       |   ├── static/
