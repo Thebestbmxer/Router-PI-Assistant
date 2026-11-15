@@ -2,6 +2,7 @@ from pathlib import Path
 
 from flask import (
     Blueprint,
+    current_app,
     render_template,
     send_from_directory,
 )
@@ -19,6 +20,18 @@ layout_status_bp = Blueprint(
     template_folder="../../layouts/default/templates",
 )
 
+@layout_status_bp.get("/status")
+def status():
+    """Render the active layout status page."""
+
+    manager = current_app.extensions["layout_manager"]
+
+    return render_template(
+        "status.html",
+        tabs=manager.tabs,
+        active_tab="status",
+    )
+""" Old Code. Delete when function above works
 @layout_status_bp.get("/status")
 def status():
 
@@ -60,7 +73,7 @@ def status():
         tabs=tabs,
         active_tab="status",
     )
-
+"""
 @layout_status_bp.get("/static/<path:filename>")
 def layout_static(filename):
 

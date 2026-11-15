@@ -37,7 +37,9 @@ class LayoutManager:
         definition_path = (layout_path / "layout.json")
 
         if not definition_path.exists():
-            return
+            raise FileNotFoundError(
+                f"Layout definition not found: {definition_path}"
+            )
 
         with definition_path.open(
             "r",
