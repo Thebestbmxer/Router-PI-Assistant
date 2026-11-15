@@ -7,9 +7,15 @@
       "enabled": true
     },
     {
+      "id": "router",
+      "label": "ROUTER",
+      "route": "/templates/router",
+      "enabled": true
+    },
+    {
       "id": "network",
       "label": "NETWORK",
-      "route": "/layout/status",
+      "route": "/layout/network",
       "enabled": true
     },
     {
