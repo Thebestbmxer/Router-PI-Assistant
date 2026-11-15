@@ -49,7 +49,7 @@ class LayoutManager:
             )
 
         active_layout = self.active()
-        self._load_layout(self.active_layout_id)
+        self._load_tabs(active_layout.path)
 
     def _load_layout(
         self,
