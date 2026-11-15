@@ -107,6 +107,51 @@ class LayoutManager:
         """Return all enabled layouts."""
         return list(self.layouts.values())
 
+    def set_active(self, layout_id: str):
+        """Switch to an enabled layout."""
+        layout = self.layouts.get(layout_id)
+
+        if layout is None:
+            raise ValueError(
+                f"Layout '{layout_id}' is not available."
+            )
+
+        tabs_path = layout.path / "tabs.json"
+
+        if not tabs_path.is_file():
+            raise FileNotFoundError(
+                f"Tabs configuration not found: {tabs_path}"
+            )
+
+        with tabs_path.open(
+            "r",
+            encoding="utf-8",
+        ) as file:
+            data = json.load(file)
+
+        tabs = data.get("tabs", [])
+
+        registry = {
+            "active_layout": layout_id,
+            "enabled": list(self.layouts.keys()),
+        }
+
+        with self.registry_path.open(
+            "w",
+            encoding="utf-8",
+        ) as file:
+            json.dump(
+                registry,
+                file,
+                indent=4,
+            )
+            file.write("\n")
+
+        self.active_layout_id = layout_id
+        self.tabs = tabs
+
+        return layout
+
     def template_path(
         self,
         template_name: str,
