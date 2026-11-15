@@ -9,7 +9,7 @@
     {
       "id": "network",
       "label": "NETWORK",
-      "route": "/layout/network",
+      "route": "/layout/status",
       "enabled": true
     },
     {
