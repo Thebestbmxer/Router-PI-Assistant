@@ -30,9 +30,32 @@ class LayoutManager:
             "default",
         )
 
+        enabled_layouts = registry.get(
+                "enabled",
+                [],
+            )
+
+        for layout_id in enabled_layouts:
+            self._load_layout(
+                layout_id,
+                load_tabs=False,
+            )
+
+        if self.active_layout_id not in self.layouts:
+            raise RuntimeError(
+                f"Active layout "
+                f"'{self.active_layout_id}' "
+                f"is not available."
+            )
+
+        active_layout = self.active()
         self._load_layout(self.active_layout_id)
 
-    def _load_layout(self, layout_id: str):
+    def _load_layout(
+        self,
+        layout_id: str,
+        load_tabs: bool = False
+        ):
         layout_path = (self.layouts_path / layout_id)
         definition_path = (layout_path / "layout.json")
 
@@ -56,7 +79,7 @@ class LayoutManager:
         )
 
         self.layouts[layout.id] = layout
-        self._load_tabs(layout_path)
+        if load_tabs: self._load_tabs(layout_path)
 
     def _load_tabs(self, layout_path: Path):
         """Load navigation tabs for a layout."""
@@ -87,7 +110,7 @@ class LayoutManager:
     def template_path(
         self,
         template_name: str,
-    ) -> Path:
+        ) -> Path:
         """Return the path to a template in the active layout."""
 
         layout = self.active()
