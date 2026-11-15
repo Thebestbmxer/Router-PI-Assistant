@@ -18,14 +18,9 @@ def register_routes(app, provision_router, welcome_service=None):
         router = app.extensions.get("router")
 
         if router is not None and router.connected:
-            return redirect(url_for("status_page"))
+            return redirect(url_for("layout_status.status"))
 
         status = welcome_service.get_status()
-        #status = welcome_service.get_status()
-        
-        #if status.ssh_key_present:
-        #if status.ready:
-        #    return redirect(url_for("status_page"))
 
         return render_template(
             "welcome.html",
