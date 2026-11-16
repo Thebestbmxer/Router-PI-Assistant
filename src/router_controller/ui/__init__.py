@@ -7,8 +7,8 @@ from flask import Flask
 from .welcome import register_routes
 from .status import register_status_routes
 
-from layout.layout_status import layout_status_bp
-from layout.manager import LayoutManager
+from .layout.layout_status import layout_status_bp
+from .layout.manager import LayoutManager
 
 from jinja2 import ChoiceLoader, FileSystemLoader
 
