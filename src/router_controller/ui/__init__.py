@@ -53,6 +53,9 @@ def _configure_layout_template_loader(
             FileSystemLoader(
                 str(template_path)
             ),
+            FileSystemLoader(
+            str(manager.layouts_path)
+            ),
             base_loader,
         ]
     )
