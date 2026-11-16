@@ -12,6 +12,7 @@ layout_status_bp = Blueprint(
 )
 
 @layout_status_bp.get("/status")
+@layout_status_bp.get("/dashboard")
 def status():
     """Render the active layout status page."""
 
