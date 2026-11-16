@@ -164,7 +164,9 @@ async function provision()
 
 discoverButton.onclick = discover;
 provisionButton.onclick = provision;
-continueButton.onclick = () => {window.location.href = "/status";};
+continueButton.onclick = () => {
+    window.location.href = "{{ url_for('layout_status.status') }}";
+    };
 </script>
 
 <style>
