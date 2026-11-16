@@ -23,6 +23,19 @@ def status():
         active_tab="dashboard",
     )
 
+
+@layout_status_bp.get("/gui-config")
+def gui_config():
+    """Render the GUI configuration page."""
+
+    manager = current_app.extensions["layout_manager"]
+
+    return render_template(
+        "gui_config.html",
+        tabs=manager.tabs,
+        active_tab="gui-config",
+    )
+
 @layout_status_bp.get("/static/<path:filename>")
 def layout_static(filename):
     """Serve static files from the active layout."""

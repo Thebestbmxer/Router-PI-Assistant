@@ -33,7 +33,7 @@
     {
       "id": "gui-config",
       "label": "GUI CONFIG",
-      "route": "layouts/gui_config",
+      "route": "/layouts/default/templates/gui_config",
       "enabled": true
     }
   ]
