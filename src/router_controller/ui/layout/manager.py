@@ -166,7 +166,7 @@ class LayoutManager:
                 f"'{self.active_layout_id}' "
                 f"is not loaded."
             )
-
+'''
         template_path = (
             layout.path
             / "templates"
@@ -180,3 +180,33 @@ class LayoutManager:
             )
 
         return template_path
+        '''
+        layout_template = (
+            layout.path / "templates" / template_name
+        )
+
+        # Search shared templates second.
+        shared_template = (
+            self.layouts_path / template_name
+        )
+
+        for candidate, root in (
+            (layout_template, layout.path / "templates"),
+            (shared_template, self.layouts_path),
+            ):
+            resolved = candidate.resolve()
+            resolved_root = root.resolve()
+
+            # Prevent paths escaping their template directory.
+            if not resolved.is_relative_to(resolved_root):
+                raise ValueError(
+                    f"Invalid template path: {template_name}"
+                )
+
+            if resolved.is_file():
+                return resolved
+
+        raise FileNotFoundError(
+            f"Template '{template_name}' not found in "
+            f"layout '{self.active_layout_id}' or shared templates."
+        )
