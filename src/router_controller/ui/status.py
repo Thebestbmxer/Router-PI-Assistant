@@ -1,6 +1,6 @@
 
 """Router status web UI and JSON API."""
-'''
+
 import logging
 from dataclasses import asdict, is_dataclass
 
