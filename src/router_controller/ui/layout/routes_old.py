@@ -1,6 +1,5 @@
 from flask import current_app, render_template
 
-
 def register_layout_routes(app):
 
     @app.get("/gui-config")
