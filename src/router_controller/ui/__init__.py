@@ -4,7 +4,7 @@ __version__ = "0.3"
 from pathlib import Path
 from flask import Flask
 
-from .welcome import register_routes
+from .welcome.routes import register_routes
 from .status import register_status_routes
 
 from .layout_status import layout_status_bp

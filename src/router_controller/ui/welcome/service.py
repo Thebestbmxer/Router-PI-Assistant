@@ -1,4 +1,4 @@
-from .welcome_status import WelcomeStatus
+from .status import WelcomeStatus
 
 
 class WelcomeService:

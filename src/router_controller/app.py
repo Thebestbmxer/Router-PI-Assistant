@@ -13,7 +13,7 @@ from .ui import (
     register_layout_manager,
     register_layout_ui,
 )
-from .ui.welcome_service import WelcomeService
+from .ui.welcome.service import WelcomeService
 
 def create_app(config_class=Config, provision_router=None):
     """Create and configure the Flask application."""

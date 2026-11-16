@@ -27,13 +27,6 @@ ROOT/
 │       |   |── provisioner.py
 │       |   └── status_service.py
 │       ├── ui/
-│       |   ├── layout/
-│       |   |   |── __init__.py
-│       |   |   |── definition.py
-│       |   |   |── manager.py
-│       |   |   |── renderer.py
-│       |   |   |── routes.py
-│       |   |   └── status.py
 │       |   ├── layouts/
 │       |   |   |── default/
 │       |   |   |   |── static/css
@@ -70,8 +63,13 @@ ROOT/
 │       |   |   |── provisioning_base.html
 │       |   |   |── status_old.html
 │       |   |   └── welcome.html
+│       |   ├── welcome/
+│       |   |   └── 
 │       |   |── __init__.py
-│       |   |── old_static.py
+│       |   |── definition.py
+│       |   |── layout_status.py
+│       |   |── manager.py
+│       |   |── renderer.py
 │       |   |── router.py
 │       |   |── status.py
 │       |   |── welcome_service.py
