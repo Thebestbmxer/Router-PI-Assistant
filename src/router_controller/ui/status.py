@@ -1,6 +1,6 @@
 
 """Router status web UI and JSON API."""
-
+'''
 import logging
 from dataclasses import asdict, is_dataclass
 
@@ -137,3 +137,4 @@ def register_status_routes(app):
         # HTTP 200 means the router is connected and the API responded.
         # Individual metric failures are reported in the errors list.
         return jsonify(data), 200
+'''
