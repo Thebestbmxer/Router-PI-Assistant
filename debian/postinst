@@ -2,6 +2,16 @@
 set -e
 
 if [ "$1" = "configure" ]; then
+    # Remove stale Python bytecode from previous installations.
+    if command -v py3clean >/dev/null 2>&1; then
+        py3clean -p router-pi-controller
+    fi
+
+    # Recompile Python modules using the newly installed source files.
+    #if command -v py3compile >/dev/null 2>&1; then
+    #    py3compile -p router-pi-controller
+    #fi
+
     if ! getent group router-controller >/dev/null; then
         addgroup --system router-controller
     fi

@@ -44,12 +44,20 @@ def _configure_layout_template_loader(
         "base_template_loader"
     ]
 
+    '''needed???'''
     template_path = active_layout.path / "templates"
-
+    
+    welcome_template_path = (
+        Path(app.root_path)
+        / "ui"
+        / "welcome"
+        / "templates"
+    )
     app.jinja_loader = ChoiceLoader(
         [
             FileSystemLoader(str(template_path)),
             FileSystemLoader(str(manager.layouts_path)),
+            FileSystemLoader(str(welcome_template_path)),
             base_loader,
         ]
     )
