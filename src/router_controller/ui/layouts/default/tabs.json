@@ -3,7 +3,7 @@
     {
       "id": "dashboard",
       "label": "Dashboard",
-      "route": "/templates/dashboard",
+      "route": "/layout/dashboard",
       "enabled": true
     },
     {
