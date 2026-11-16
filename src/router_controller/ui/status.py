@@ -137,4 +137,3 @@ def register_status_routes(app):
         # HTTP 200 means the router is connected and the API responded.
         # Individual metric failures are reported in the errors list.
         return jsonify(data), 200
-'''
