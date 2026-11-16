@@ -25,7 +25,6 @@ Router Pi Controller Setup
         </div>
 
         <div class="details">
-
             <div>
                 <label>Address</label>
 
@@ -42,22 +41,18 @@ Router Pi Controller Setup
                     {{ status.ssh_port or "-" }}
                 </span>
             </div>
-
         </div>
 
 
         <div class="actions">
-
             <button id="discover">
                 Discover Router
             </button>
-
 
             <button id="provision"
                     disabled>
                 Install SSH Key
             </button>
-
 
             <button id="continue"
                     disabled>
@@ -97,7 +92,6 @@ async function discover()
         const response = await fetch("/api/router/discover");
         const data = await response.json();
 
-
         if (!data.found) {throw new Error(data.error);}
 
         address.textContent = data.address;
@@ -108,7 +102,6 @@ async function discover()
             "Router discovered.",
             "success"
         );
-
     }
 
     catch(error)
@@ -212,6 +205,5 @@ continueButton.onclick = () => {
 
     button {padding: 12px 18px;}
 </style>
-
 
 {% endblock %}

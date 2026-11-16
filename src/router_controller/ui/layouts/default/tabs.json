@@ -3,32 +3,32 @@
     {
       "id": "dashboard",
       "label": "Dashboard",
-      "route": "/layout/dashboard",
+      "route": "/templates/dashboard",
       "enabled": true
     },
     {
       "id": "router",
       "label": "ROUTER",
       "route": "/templates/router",
-      "enabled": true
+      "enabled": false
     },
     {
       "id": "network",
       "label": "NETWORK",
       "route": "/layout/network",
-      "enabled": true
+      "enabled": false
     },
     {
       "id": "wireless",
       "label": "WIRELESS",
       "route": "/layout/wireless",
-      "enabled": true
+      "enabled": false
     },
     {
       "id": "clients",
       "label": "CLIENTS",
       "route": "/layout/clients",
-      "enabled": true
+      "enabled": false
     },
     {
       "id": "gui-config",
