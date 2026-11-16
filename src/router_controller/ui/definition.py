@@ -8,14 +8,3 @@ class LayoutDefinition:
     version: str
     description: str
     path: Path
-    '''
-    template_path: Path
-    stylesheet_path: Path
-    tabs_path: Path
-
-    layout_type: str
-    tab_position: str
-    density: str
-    theme_mode: str
-    accent: str
-    '''
