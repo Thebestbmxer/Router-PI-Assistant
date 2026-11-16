@@ -1,4 +1,4 @@
-
+'''
 """Router status web UI."""
 
 import logging
@@ -75,3 +75,4 @@ def register_status_routes(app):
             )
 
         return jsonify(data)
+'''

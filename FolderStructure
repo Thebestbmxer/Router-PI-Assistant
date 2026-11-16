@@ -28,6 +28,11 @@ ROOT/
 │       |   └── status_service.py
 │       ├── ui/
 │       |   ├── layout/
+│       |   |   |── definition.py
+│       |   |   |── manager.py
+│       |   |   |── renderer.py
+│       |   |   |── routes.py
+│       |   |   └── status.py
 │       |   ├── layouts/
 │       |   |   |── default/
 │       |   |   |   |── static/css
@@ -36,13 +41,28 @@ ROOT/
 │       |   |   |   |   |── components/
 │       |   |   |   |   |   └── tabs.html
 │       |   |   |   |   |── base.html
+│       |   |   |   |   |── gui_config.html
 │       |   |   |   |   |── router.html
 │       |   |   |   |   └── status.html
 │       |   |   |   |── layout.json
 │       |   |   |   └── tabs.json
 │       |   |   |── openwrt/
-│       |   |   └── active_layouts.json
-│       |   ├── static/
+│       |   |   |   |── templates/
+│       |   |   |   |   |── components/
+│       |   |   |   |   |   └── tabs.html
+│       |   |   |   |   |── base.html
+│       |   |   |   |   |── gui_config.html
+│       |   |   |   |   |── router.html
+│       |   |   |   |   └── status.html
+│       |   |   |   |── layout.json
+│       |   |   |   └── tabs.json
+│       |   |   |── active_layouts.json
+│       |   |   └── gui_template.html
+│       |   ├── static/ status
+│       |   |   |── status_old.css
+│       |   |   |── status_old.js
+│       |   |   |── status.css
+│       |   |   └── status.js
 │       |   ├── templates/
 │       |   |   |── base.html
 │       |   |   |── home.html

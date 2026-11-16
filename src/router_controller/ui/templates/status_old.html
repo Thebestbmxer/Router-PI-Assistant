@@ -13,9 +13,7 @@
 </head>
 
 <body>
-
-    <div class="app">
-
+    <div class="app" id="app">
         <header class="topbar">
             <div class="brand">
                 <span class="brand-mark">R</span>
@@ -31,15 +29,22 @@
                 </div>
             </div>
 
-            <div id="connection-indicator"
-                 class="connection disconnected">
+            <div class="topbar-right">
+                <div class="theme-selector">
+                    <label for="theme-select">Theme</label>
+                    <select id="theme-select">
+                        <option value="default">Default</option>
+                        <option value="open">Open</option>
+                    </select>
+                </div>
 
-                <span class="connection-dot"></span>
-
-                <span id="connection-text">
-                    Checking...
-                </span>
-
+                <div id="connection-indicator"
+                     class="connection disconnected">
+                    <span class="connection-dot"></span>
+                    <span id="connection-text">
+                        Checking...
+                    </span>
+                </div>
             </div>
         </header>
 
@@ -47,6 +52,7 @@
         <main class="content">
 
             <section class="page-heading">
+
                 <div>
                     <h1>Router Status</h1>
 
@@ -54,6 +60,7 @@
                         Current connection and router information
                     </p>
                 </div>
+
             </section>
 
 
