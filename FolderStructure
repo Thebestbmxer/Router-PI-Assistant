@@ -28,6 +28,7 @@ ROOT/
 │       |   └── status_service.py
 │       ├── ui/
 │       |   ├── layout/
+│       |   |   |── __init__.py
 │       |   |   |── definition.py
 │       |   |   |── manager.py
 │       |   |   |── renderer.py
@@ -68,7 +69,6 @@ ROOT/
 │       |   |   |── home.html
 │       |   |   |── provisioning_base.html
 │       |   |   |── status_old.html
-│       |   |   |── status.html
 │       |   |   └── welcome.html
 │       |   |── __init__.py
 │       |   |── old_static.py

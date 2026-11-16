@@ -7,8 +7,8 @@ from flask import Flask
 from .welcome import register_routes
 from .status import register_status_routes
 
-from .layout.status import layout_status_bp
-from .layout.manager import LayoutManager
+from .layout_status import layout_status_bp
+from .manager import LayoutManager
 
 from jinja2 import ChoiceLoader, FileSystemLoader
 
@@ -44,18 +44,12 @@ def _configure_layout_template_loader(
         "base_template_loader"
     ]
 
-    template_path = (
-        active_layout.path / "templates"
-    )
+    template_path = active_layout.path / "templates"
 
     app.jinja_loader = ChoiceLoader(
         [
-            FileSystemLoader(
-                str(template_path)
-            ),
-            FileSystemLoader(
-            str(manager.layouts_path)
-            ),
+            FileSystemLoader(str(template_path)),
+            FileSystemLoader(str(manager.layouts_path)),
             base_loader,
         ]
     )
@@ -94,3 +88,12 @@ def register_layout_manager(app: Flask) -> None:
 def register_layout_ui(app: Flask) -> None:
     """Register the new layout-based UI."""
     app.register_blueprint(layout_status_bp)
+
+__all__ = [
+    "__version__",
+    "register_ui_context",
+    "register_status_ui",
+    "register_layout_manager",
+    "register_layout_ui",
+    "LayoutManager",
+]
